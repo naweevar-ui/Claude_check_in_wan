@@ -1,0 +1,9 @@
+# ไฟล์รายชื่อจริงของผู้เรียน ห้ามขึ้น GitHub
+*.xlsx
+*.xls
+data/
+roster*.csv
+!templates/roster-template.csv
+.DS_Store
+.clasp.json
+node_modules/

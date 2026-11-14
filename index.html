@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>เช็คชื่อ Claude AI</title>
+<script src="config.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=Mali:wght@600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: warm and cute front-desk register; Thai first, gentle ค่ะ tone.
+   IDEA: a class sign-in sheet on a clipboard — rows to tick, a line to sign.
+   PICTURE: the live roster itself, with a progress ring on a deep-brown band.
+   COLOUR and TYPE: warm white ground, deep brown band, cream panels, caramel-gold accent; Anuphan.
+   LAYOUT: green header band (title + ring), sticky toolbar, card grid that collapses to one column on phones. */
+:root{color-scheme:light dark;
+--bg:light-dark(#fffdf9,#17110c);--ink:light-dark(#2e1d10,#f4e9dc);--mute:light-dark(#7d6450,#b39c87);
+--g:light-dark(#8a5a2b,#d29a5c);--gd:light-dark(#5c3a1c,#3a2614);--mint:light-dark(#f6ede2,#2a1d12);
+--line:light-dark(#eadbc9,#3d2b1c);--card:light-dark(#ffffff,#211710);--lime:#f2c46d;--amber:light-dark(#b3401e,#f08a62);
+--shadow:light-dark(0 1px 2px #2e1d1014,0 4px 18px #2e1d100f,0 1px 2px #0006)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Anuphan,"Noto Sans Thai",system-ui,sans-serif;overflow-x:clip}
+button,input,textarea,select{font:inherit;color:inherit}
+.band{padding:clamp(22px,4vw,48px) max(5vw,16px)}
+.wrap{max-width:1240px;margin:0 auto}
+header.band{background:radial-gradient(120% 140% at 90% 0%,#b57a3e 0%,transparent 55%),linear-gradient(160deg,#6b4220,#3b2210);color:#fff8ef;padding-bottom:clamp(30px,5vw,60px)}
+.hd{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:center}
+.kick{display:inline-flex;gap:8px;align-items:center;background:#ffffff1f;border:1px solid #ffffff33;border-radius:99px;padding:4px 12px;font-size:14px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--lime);box-shadow:0 0 0 4px #f2c46d33}
+h1{font-size:clamp(32px,5vw,52px);line-height:1.05;margin:14px 0 8px;font-weight:700;text-wrap:balance}
+.sub{margin:0;color:#ecd9c3;font-size:17px}
+.clock{font-variant-numeric:tabular-nums;white-space:nowrap}
+.ring{position:relative;width:168px;height:168px}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring .num{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
+.ring b{font-size:40px;line-height:1;font-variant-numeric:tabular-nums}.ring small{font-size:14px;color:#ecd9c3}
+.stats{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.stat{background:#ffffff14;border:1px solid #ffffff2a;border-radius:12px;padding:8px 14px;font-size:14px}
+.stat b{font-size:17px;margin-right:4px;font-variant-numeric:tabular-nums}
+.bar{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:12px max(5vw,16px)}
+.tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.search{flex:1 1 240px;display:flex;align-items:center;gap:8px;border:1.5px solid var(--line);border-radius:12px;padding:0 12px;background:var(--card);min-height:46px}
+.search:focus-within{border-color:var(--g)}
+.search input{border:0;outline:0;background:none;flex:1;font-size:16px;min-height:44px}
+.seg{display:flex;background:var(--mint);border-radius:12px;padding:4px;gap:2px}
+.seg button{border:0;background:none;border-radius:9px;padding:0 14px;min-height:38px;cursor:pointer;color:var(--mute);white-space:nowrap}
+.seg button[aria-pressed=true]{background:var(--card);color:var(--ink);font-weight:600;box-shadow:var(--shadow)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 16px;border-radius:12px;border:1.5px solid var(--line);background:var(--card);cursor:pointer;font-weight:500;white-space:nowrap}
+.btn:hover{border-color:var(--g)}
+.btn.pri{background:var(--g);border-color:var(--g);color:#fff}
+.btn.pri:hover{filter:brightness(1.07)}
+.btn.pri:disabled{opacity:.45;cursor:not-allowed;filter:none}
+.btn.ghost{border-color:transparent;background:none}
+.btn.danger{color:#c0392b}
+:focus-visible{outline:3px solid var(--lime);outline-offset:2px}
+svg.i{width:20px;height:20px;flex:none;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+main.band{padding-top:22px}
+.note{font-size:14px;color:var(--mute);margin:0 0 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.note.warn{color:var(--amber)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,330px),1fr));gap:12px}
+.card{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 12px 12px 14px;box-shadow:var(--shadow);transition:transform .2s,border-color .2s}
+.card.done{background:linear-gradient(90deg,var(--mint),var(--card) 70%);border-color:color-mix(in srgb,var(--g) 35%,var(--line))}
+.av{width:48px;height:48px;border-radius:14px;display:grid;place-content:center;font-weight:700;background:var(--mint);color:var(--g);font-size:17px}
+.done .av{background:var(--g);color:#fff}
+.who b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.who span{display:block;font-size:14px;color:var(--mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.meta{display:flex;align-items:center;gap:8px;margin-top:4px;flex-wrap:wrap}
+.time{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap;font-size:15px}
+.pill{font-size:13px;border-radius:99px;padding:1px 9px;white-space:nowrap;background:var(--mint);color:var(--g);font-weight:500}
+.pill.late{background:color-mix(in srgb,var(--amber) 16%,transparent);color:var(--amber)}
+.side{display:flex;align-items:center;gap:6px}
+.sig{width:84px;height:40px;object-fit:contain;border-radius:8px;background:#fff;border:1px solid var(--line);cursor:zoom-in}
+.x{width:44px;height:44px;border-radius:12px;border:0;background:none;color:var(--mute);cursor:pointer;display:grid;place-content:center}
+.x:hover{background:var(--mint);color:var(--ink)}
+.empty{text-align:center;padding:56px 16px;border:2px dashed var(--line);border-radius:20px;background:var(--mint)}
+.empty h2{font-size:24px;margin:0 0 6px}.empty p{color:var(--mute);margin:0 auto 18px;max-width:52ch}
+.ov{position:fixed;inset:0;background:#1a0f0699;display:none;align-items:center;justify-content:center;padding:16px;z-index:20}
+.ov.on{display:flex}
+.dlg{background:var(--card);border-radius:22px;width:min(560px,100%);max-height:calc(100dvh - 32px);overflow:auto;padding:clamp(18px,4vw,28px);box-shadow:0 24px 60px #0007}
+.dlg h2{font-size:24px;line-height:1.2;margin:0 0 4px}
+.dlg .lead{color:var(--mute);margin:0 0 16px}
+.big{font-size:clamp(32px,7vw,44px);font-weight:700;font-variant-numeric:tabular-nums;color:var(--g);line-height:1.1}
+.pad{position:relative;height:200px;border:2px dashed var(--line);border-radius:16px;background:#fff;touch-action:none;margin:12px 0 6px}
+.pad canvas{position:absolute;inset:0;width:100%;height:100%;border-radius:14px;cursor:crosshair}
+.pad .hint{position:absolute;left:16px;right:16px;bottom:34px;border-bottom:1.5px solid #e2d2bf;color:#a88f78;font-size:14px;pointer-events:none;padding-bottom:4px}
+.pad.has .hint{color:transparent}
+.acts{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end;margin-top:16px}
+.acts .sp{flex:1}
+label.f{display:block;font-size:14px;color:var(--mute);margin:12px 0 4px}
+.in{width:100%;min-height:46px;border:1.5px solid var(--line);border-radius:12px;padding:8px 12px;background:var(--bg);font-size:16px}
+.in:focus{outline:0;border-color:var(--g)}
+textarea.in{min-height:110px;resize:vertical}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.drop{border:2px dashed var(--g);border-radius:16px;padding:22px;text-align:center;background:var(--mint);cursor:pointer}
+.drop.over{background:color-mix(in srgb,var(--g) 18%,var(--mint))}
+.drop b{color:var(--g)}
+.prev{font-size:14px;background:var(--mint);border-radius:12px;padding:10px 14px;margin-top:12px}
+.prev ol{margin:6px 0 0;padding-left:20px}
+.toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,140%);background:#3b2210;color:#fff4e6;border-radius:14px;padding:10px 10px 10px 16px;display:flex;gap:12px;align-items:center;box-shadow:0 10px 30px #0006;transition:transform .3s;z-index:30;width:max-content;max-width:calc(100vw - 24px)}
+.toast.on{transform:translate(-50%,0)}
+.toast button{background:var(--lime);color:#3b2210;border:0;border-radius:10px;min-height:38px;padding:0 12px;font-weight:600;cursor:pointer}
+.check{display:flex;gap:10px;align-items:center;margin-top:12px;min-height:44px}
+.check input{width:22px;height:22px;accent-color:var(--g)}
+
+.mali,h1,.dlg h2,.empty h2,.ring b,.big{font-family:Mali,Anuphan,system-ui,sans-serif}
+header.band{position:relative;overflow:hidden}
+header.band::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:18px;background:radial-gradient(circle at 50% 100%,var(--bg) 12px,transparent 13px) 0 0/30px 18px repeat-x}
+.hr{display:flex;align-items:flex-end;gap:4px}
+.bear{width:150px;height:150px;animation:bob 3.2s ease-in-out infinite;transform-origin:50% 100%;filter:drop-shadow(0 6px 10px #0003)}
+.bear .eyes{animation:blink 4.5s infinite;transform-origin:80px 76px}
+@keyframes bob{50%{transform:translateY(-6px) rotate(-2deg)}}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+.spark{position:absolute;color:#f2c46d;opacity:.55;animation:fl 6s ease-in-out infinite;pointer-events:none}
+.spark svg{width:100%;height:100%;fill:currentColor}
+@keyframes fl{50%{transform:translateY(-10px) rotate(12deg);opacity:.9}}
+.btn,.seg,.seg button,.search,.in,.toast,.toast button{border-radius:99px}
+textarea.in{border-radius:18px}
+.card{border-radius:24px}
+.av{border-radius:50%;background:var(--av,var(--mint));color:var(--avk,var(--g))}
+.done .av{background:var(--g);color:#fff}
+.burst{position:fixed;z-index:40;pointer-events:none;width:18px;height:18px;margin:-9px 0 0 -9px;color:var(--c);animation:fly .9s cubic-bezier(.2,.7,.3,1) forwards}
+.burst svg{width:100%;height:100%;fill:currentColor}
+@keyframes fly{to{transform:translate(var(--x),var(--y)) scale(.4) rotate(var(--r));opacity:0}}
+.hello{font-size:15px;color:var(--g);font-weight:600;margin:0 0 2px}
+.empty .bear{width:120px;height:120px;display:block;margin:0 auto 8px}
+@media(max-width:600px){.hr{justify-self:start}.bear{width:108px;height:108px}}
+.vbadge{margin-left:8px;vertical-align:middle;background:#f2c46d;color:#3b2210;border:0;border-radius:99px;padding:4px 12px;font:600 14px/1.4 Mali,Anuphan,sans-serif;cursor:pointer;min-height:30px;box-shadow:0 2px 0 #00000030}.vbadge:hover{filter:brightness(1.06)}
+.ver-list{list-style:none;padding:0;margin:0}.ver-list>li{border-left:3px solid var(--line);padding:0 0 14px 16px;position:relative}.ver-list>li::before{content:'';position:absolute;left:-8px;top:4px;width:13px;height:13px;border-radius:50%;background:var(--g)}.ver-list>li:first-child::before{background:#f2c46d;box-shadow:0 0 0 4px #f2c46d44}.ver-list b{font-family:Mali,Anuphan,sans-serif;font-size:17px}.ver-list small{color:var(--mute);margin-left:6px}.ver-list ul{margin:4px 0 0;padding-left:18px;color:var(--ink)}
+.ft button{background:none;border:0;color:inherit;font:inherit;cursor:pointer;text-decoration:underline dotted}
+.ft{text-align:center;font-size:13px;color:var(--mute);padding:8px 16px 28px}.ft b{font-weight:600}.ft .warn{color:var(--amber)}
+@keyframes pop{0%{transform:scale(.96)}60%{transform:scale(1.02)}100%{transform:scale(1)}}
+.card.just{animation:pop .45s ease}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media(max-width:600px){.hd{grid-template-columns:1fr}.ring{width:120px;height:120px}.ring b{font-size:32px}
+.search{flex:1 1 100%}.seg{flex:1 1 100%}.tools .btn span{display:none}.tools .btn{padding:0 12px;flex:1}.seg button{flex:1;padding:0 8px}.row2{grid-template-columns:1fr}.sig{width:64px}}
+</style>
+</head>
+<body>
+<header class="band"><div class="wrap hd">
+  <div>
+    <span class="kick"><span class="dot"></span><span id="today">วันนี้</span> · <span class="clock" id="clock">--:--</span></span>
+    <button class="vbadge" id="vBadge" type="button" aria-label="ดูประวัติเวอร์ชัน"></button>
+    <h1>เช็คชื่อคลาส <span id="ttl">Claude AI</span></h1>
+    <p class="sub">หาชื่อของคุณ แตะเช็คอิน เซ็นชื่อสวยๆ แล้วกดยืนยันได้เลยค่ะ ระบบจะบันทึกเวลาให้เอง</p>
+    <div class="stats">
+      <div class="stat"><b id="sOn">0</b>มาตรงเวลา</div>
+      <div class="stat"><b id="sLate">0</b>มาสาย</div>
+      <div class="stat"><b id="sLeft">0</b>ยังไม่มา</div>
+      <div class="stat">เริ่มเรียน <b id="sStart" style="margin:0 0 0 4px">09:00</b></div>
+    </div>
+  </div>
+  <div class="hr">
+    <svg class="bear" viewBox="0 0 160 160" aria-hidden="true">
+      <ellipse cx="80" cy="154" rx="44" ry="5" fill="#00000030"/>
+      <ellipse cx="80" cy="130" rx="44" ry="28" fill="#93602f"/>
+      <g class="ears"><circle cx="40" cy="42" r="17" fill="#a8723f"/><circle cx="120" cy="42" r="17" fill="#a8723f"/><circle cx="40" cy="42" r="9" fill="#ecc39a"/><circle cx="120" cy="42" r="9" fill="#ecc39a"/></g>
+      <circle cx="80" cy="80" r="46" fill="#b07a45"/>
+      <ellipse cx="66" cy="54" rx="18" ry="9" fill="#ffffff22" transform="rotate(-20 66 54)"/>
+      <ellipse cx="80" cy="96" rx="19" ry="14" fill="#f3d6b4"/>
+      <ellipse cx="80" cy="89" rx="6.5" ry="4.8" fill="#3b2210"/>
+      <path d="M73 97q7 7 14 0" stroke="#3b2210" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+      <g class="eyes"><circle cx="61" cy="76" r="5.5" fill="#2e1d10"/><circle cx="99" cy="76" r="5.5" fill="#2e1d10"/><circle cx="63" cy="74" r="1.8" fill="#fff"/><circle cx="101" cy="74" r="1.8" fill="#fff"/></g>
+      <ellipse cx="50" cy="92" rx="8" ry="4.5" fill="#f2918a" opacity=".55"/><ellipse cx="110" cy="92" rx="8" ry="4.5" fill="#f2918a" opacity=".55"/>
+      <rect x="55" y="108" width="50" height="42" rx="8" fill="#fff8ef" stroke="#6b4220" stroke-width="3"/>
+      <rect x="69" y="103" width="22" height="10" rx="4" fill="#f2c46d" stroke="#6b4220" stroke-width="2.5"/>
+      <path d="M66 130l8 8 17-19" stroke="#c0623f" stroke-width="4.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="54" cy="126" r="10" fill="#a8723f"/><circle cx="106" cy="126" r="10" fill="#a8723f"/>
+    </svg>
+  <div class="ring" aria-label="ความคืบหน้าการเช็คชื่อ">
+    <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" stroke="#ffffff26" stroke-width="12" fill="none"/>
+    <circle id="arc" cx="60" cy="60" r="52" stroke="#f2c46d" stroke-width="12" fill="none" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="326.7" style="transition:stroke-dashoffset .6s"/></svg>
+    <div class="num"><b id="cnt">0/0</b><small>เช็คอินแล้ว</small></div>
+  </div></div>
+</div><span class="spark" style="left:46%;top:14%;width:14px;height:14px;animation-delay:0s"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.5-9.2C1 8.3 3.2 4.5 7 4.5c2.1 0 3.6 1.1 5 2.9 1.4-1.8 2.9-2.9 5-2.9 3.8 0 6 3.8 4.5 7.3C19.5 16.4 12 21 12 21z"/></svg></span><span class="spark" style="left:58%;top:62%;width:10px;height:10px;animation-delay:1.5s"><svg viewBox="0 0 24 24"><path d="M12 2l2.6 7.4L22 12l-7.4 2.6L12 22l-2.6-7.4L2 12l7.4-2.6z"/></svg></span><span class="spark" style="left:88%;top:10%;width:12px;height:12px;animation-delay:3s"><svg viewBox="0 0 24 24"><path d="M12 2l2.6 7.4L22 12l-7.4 2.6L12 22l-2.6-7.4L2 12l7.4-2.6z"/></svg></span><span class="spark" style="left:34%;top:80%;width:9px;height:9px;animation-delay:2.2s"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.5-9.2C1 8.3 3.2 4.5 7 4.5c2.1 0 3.6 1.1 5 2.9 1.4-1.8 2.9-2.9 5-2.9 3.8 0 6 3.8 4.5 7.3C19.5 16.4 12 21 12 21z"/></svg></span></header>
+
+<div class="bar"><div class="wrap tools">
+  <label class="search"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input id="q" type="search" placeholder="ค้นหาชื่อ บริษัท หรืออีเมล" autocomplete="off"></label>
+  <div class="seg" role="group" aria-label="กรอง">
+    <button data-f="all" aria-pressed="true">ทั้งหมด</button><button data-f="wait" aria-pressed="false">ยังไม่มา</button><button data-f="done" aria-pressed="false">มาแล้ว</button>
+  </div>
+  <button class="btn" id="bImp" title="นำเข้ารายชื่อ"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v3h16v-3"/></svg><span>นำเข้ารายชื่อ</span></button>
+  <button class="btn" id="bAdd" title="เพิ่มชื่อ"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>เพิ่มชื่อ</span></button>
+  <button class="btn" id="bExp" title="ส่งออก"><svg class="i" viewBox="0 0 24 24"><path d="M12 15V3m0 0L8 7m4-4 4 4M4 17v3h16v-3"/></svg><span>ส่งออก</span></button>
+  <button class="btn ghost" id="bSet" title="ตั้งค่า" aria-label="ตั้งค่า"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+</div></div>
+
+<main class="band"><div class="wrap">
+  <p class="note" id="mode">กำลังเชื่อมต่อฐานข้อมูล…</p>
+  <div class="grid" id="list"></div>
+  <div class="empty" id="empty" hidden>
+    <svg class="bear e" viewBox="0 0 160 160" aria-hidden="true">
+      <ellipse cx="80" cy="154" rx="44" ry="5" fill="#00000030"/>
+      <ellipse cx="80" cy="130" rx="44" ry="28" fill="#93602f"/>
+      <g class="ears"><circle cx="40" cy="42" r="17" fill="#a8723f"/><circle cx="120" cy="42" r="17" fill="#a8723f"/><circle cx="40" cy="42" r="9" fill="#ecc39a"/><circle cx="120" cy="42" r="9" fill="#ecc39a"/></g>
+      <circle cx="80" cy="80" r="46" fill="#b07a45"/>
+      <ellipse cx="66" cy="54" rx="18" ry="9" fill="#ffffff22" transform="rotate(-20 66 54)"/>
+      <ellipse cx="80" cy="96" rx="19" ry="14" fill="#f3d6b4"/>
+      <ellipse cx="80" cy="89" rx="6.5" ry="4.8" fill="#3b2210"/>
+      <path d="M73 97q7 7 14 0" stroke="#3b2210" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+      <g class="eyes"><circle cx="61" cy="76" r="5.5" fill="#2e1d10"/><circle cx="99" cy="76" r="5.5" fill="#2e1d10"/><circle cx="63" cy="74" r="1.8" fill="#fff"/><circle cx="101" cy="74" r="1.8" fill="#fff"/></g>
+      <ellipse cx="50" cy="92" rx="8" ry="4.5" fill="#f2918a" opacity=".55"/><ellipse cx="110" cy="92" rx="8" ry="4.5" fill="#f2918a" opacity=".55"/>
+      <rect x="55" y="108" width="50" height="42" rx="8" fill="#fff8ef" stroke="#6b4220" stroke-width="3"/>
+      <rect x="69" y="103" width="22" height="10" rx="4" fill="#f2c46d" stroke="#6b4220" stroke-width="2.5"/>
+      <path d="M66 130l8 8 17-19" stroke="#c0623f" stroke-width="4.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="54" cy="126" r="10" fill="#a8723f"/><circle cx="106" cy="126" r="10" fill="#a8723f"/>
+    </svg>
+    <h2>ยังไม่มีรายชื่อผู้เข้าเรียนเลยค่ะ</h2>
+    <p>นำเข้ารายชื่อจากไฟล์ CSV หรือ Excel (.xlsx) หรือวางรายชื่อที่คัดลอกมาจาก Google Sheet ได้เลย คอลัมน์ที่รองรับ: ชื่อ, นามสกุล, บริษัท, อีเมล, เบอร์โทร</p>
+    <p id="noSheet" hidden style="color:var(--g);font-weight:600">ยังไม่ได้เชื่อม Google Sheet ค่ะ ใส่ URL ของ Apps Script ในไฟล์ config.js แล้วรายชื่อจาก Sheet จะขึ้นเอง หรือกดนำเข้ารายชื่อจากไฟล์ Excel ด้านล่างได้เลย</p>
+    <button class="btn pri" id="bImp2"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v3h16v-3"/></svg>นำเข้ารายชื่อ</button>
+  </div>
+</div></main>
+
+<footer class="ft" id="ft">เว็บเช็คชื่อคลาส Claude AI · <button id="vFoot" type="button">เวอร์ชัน <b id="ver"></b></button><span id="sver"></span></footer>
+<div class="ov" id="ov"><div class="dlg" role="dialog" aria-modal="true" id="dlg"></div></div>
+<div class="toast" id="toast" role="status"><span id="tMsg"></span><button id="tBtn" hidden>ยกเลิก</button></div>
+<input type="file" id="file" accept=".csv,.txt,.tsv,.xlsx,.xls" hidden>
+
+<script>
+{
+const APP_VERSION='1.1.0';
+const CHANGES=[
+ ['1.1.0','14 พ.ย. 2569',['ป้ายเวอร์ชันที่หัวเว็บ กดดูประวัติการพัฒนาได้','ขึ้นเว็บผ่าน GitHub Pages','บอกวิธีเชื่อม Google Sheet เมื่อยังไม่มีรายชื่อ']],
+ ['1.0.0','14 พ.ย. 2569',['เช็คอินพร้อมลายเซ็นและเวลา บอกตรงเวลา / สาย','บันทึกลง Google Sheet และเก็บลายเซ็นใน Google Drive','นำเข้ารายชื่อจาก CSV / Excel / Google Form และส่งออก CSV','โทนน้ำตาลพร้อมน้องหมี ใช้ได้ทั้งมือถือ แท็บเล็ต และคอม']]
+];
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad2=n=>String(n).padStart(2,'0');
+const hm=d=>{d=new Date(d);return pad2(d.getHours())+':'+pad2(d.getMinutes())};
+const uid=()=>'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const norm=s=>String(s||'').toLowerCase().replace(/\s+/g,' ').trim();
+let roster=[],checks={},settings={title:'Claude AI',start:'09:00',grace:10,requireSig:true,...((window.CHECKIN_CONFIG||{}).DEFAULTS||{})};
+let filter='all',q='',store=null,dl=null,lastIn=null;
+/* ตั้งค่า URL ของ Google Apps Script ได้ที่ไฟล์ config.js */
+const CFG=window.CHECKIN_CONFIG||{};
+const GAS_URL=CFG.GAS_URL||'';
+const SEED=[];
+
+/* ---------- storage: shared db when available, this-device fallback otherwise ---------- */
+const LS='claude-class-checkin-v1';
+function localStore(){
+  let d={};try{d=JSON.parse(localStorage.getItem(LS)||'{}')}catch(e){}
+  roster=(d.roster&&d.roster.length)?d.roster:SEED.map(p=>({...p}));checks=d.checks||{};settings={...settings,...(d.settings||{})};
+  const save=()=>{try{localStorage.setItem(LS,JSON.stringify({roster,checks,settings}))}catch(e){toast('บันทึกในเครื่องไม่สำเร็จ')}};
+  return{shared:false,
+    roster:async r=>{roster=r;save();render()},
+    settings:async s=>{settings=s;save();render()},
+    checkin:async(id,c)=>{checks[id]=c;save();render()},
+    uncheck:async id=>{delete checks[id];save();render()},
+    clear:async()=>{checks={};save();render()}};
+}
+function dbStore(db){
+  const R=db.doc('class/roster'),S=db.doc('class/settings'),C=db.collection('checkins');
+  let got=0;const t=setTimeout(()=>{if(got<3)setMode('ยังเชื่อมต่อฐานข้อมูลไม่ได้ ข้อมูลที่เห็นอาจยังไม่อัปเดต','warn')},10000);
+  const ok=()=>{if(++got>=3){clearTimeout(t);setMode('')}};
+  const fail=()=>{clearTimeout(t);setMode('การเชื่อมต่อขาดหาย กรุณารีเฟรชหน้า','warn')};
+  let f1=0,f2=0,f3=0;
+  R.onSnapshot(s=>{roster=(s.exists&&s.data().people)||[];if(!f1&&!s.metadata.fromCache){f1=1;ok()}render()},fail);
+  S.onSnapshot(s=>{if(s.exists)settings={...settings,...s.data()};if(!f2&&!s.metadata.fromCache){f2=1;ok()}render()},fail);
+  C.onSnapshot(s=>{const o={};s.docs.forEach(d=>o[d.id]=d.data());checks=o;if(!f3&&!s.metadata.fromCache){f3=1;ok()}render()},fail);
+  const w=async(p,label)=>{try{await p}catch(e){toast(e&&e.code==='quota_exceeded'?'พื้นที่เก็บข้อมูลเต็ม':'บันทึกไม่สำเร็จ'+(label?': '+label:''));throw e}};
+  return{shared:true,
+    roster:r=>w(R.set({people:r}),'รายชื่อ'),
+    settings:s=>w(S.set(s),'ตั้งค่า'),
+    checkin:(id,c)=>w(C.doc(id).set(c),'เช็คอิน'),
+    uncheck:id=>w(C.doc(id).delete(),'ยกเลิก'),
+    clear:async()=>{for(const id of Object.keys(checks))await w(C.doc(id).delete(),'ยกเลิก')}};
+}
+function showSV(v){const e=$('#sver');if(!e)return;if(!v){e.innerHTML=' · <span class="warn">โค้ดฝั่ง Google Sheet ยังเป็นรุ่นเก่า กรุณาอัปเดต Code.gs</span>';return}
+  e.innerHTML=' · Google Sheet v'+esc(v)+(v!==APP_VERSION?' <span class="warn">(เวอร์ชันไม่ตรงกับหน้าเว็บ กรุณาอัปเดต)</span>':'')}
+function gasStore(url){
+  const call=async b=>{const r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(b)});const j=await r.json();if(!j.ok)throw new Error(j.error||'error');return j};
+  const apply=j=>{showSV(j.version);roster=j.roster||[];checks=j.checks||{};settings={...settings,...(j.settings||{})};render()};
+  let busy=0;
+  const pull=async first=>{if(busy)return;try{const j=await call({action:'all'});if(busy)return;apply(j);setMode('เชื่อมต่อ Google Sheet แล้ว · อัปเดตทุก 15 วินาที');
+    if(first&&!roster.length&&SEED.length){apply(await call({action:'roster',people:SEED}))}}
+    catch(e){setMode('เชื่อมต่อ Google Sheet ไม่ได้ ตรวจสอบ URL ในหน้าตั้งค่า','warn')}};
+  pull(true);setInterval(()=>pull(false),15000);
+  const w=async(b,label,local)=>{busy++;if(local){local();render()}try{apply(await call(b))}catch(e){toast('บันทึกไม่สำเร็จ: '+label);throw e}finally{busy--}};
+  return{shared:true,
+    roster:r=>w({action:'roster',people:r},'รายชื่อ',()=>{roster=r}),
+    settings:s=>w({action:'settings',settings:s},'ตั้งค่า',()=>{settings=s}),
+    checkin:(id,c)=>w({action:'checkin',id,data:c},'เช็คอิน',()=>{checks={...checks,[id]:c}}),
+    uncheck:id=>w({action:'uncheck',id},'ยกเลิก',()=>{const o={...checks};delete o[id];checks=o}),
+    clear:()=>w({action:'clear'},'ล้างการเช็คอิน',()=>{checks={}})};
+}
+function setMode(t,cls){const m=$('#mode');m.textContent=t;m.className='note'+(cls?' '+cls:'');m.hidden=!t}
+
+/* ---------- render ---------- */
+const lateMin=c=>{const[h,m]=settings.start.split(':').map(Number);const d=new Date(c.at);return d.getHours()*60+d.getMinutes()-(h*60+m)};
+const isLate=c=>lateMin(c)>Number(settings.grace||0);
+const AV=[['#f6e3cf','#8a5a2b'],['#f9dcd5','#a2493a'],['#f3e7c4','#86641a'],['#e6ead2','#5f6b2c'],['#eadcf0','#6e4a80'],['#d9e8ec','#2f6474']];
+const avs=id=>{let h=0;for(const ch of String(id))h=(h*31+ch.charCodeAt(0))>>>0;const[a,b]=AV[h%AV.length];return`--av:light-dark(${a},${b}55);--avk:light-dark(${b},${a})`};
+const initials=n=>{const p=String(n).trim().split(/\s+/);return esc(((p[0]||'')[0]||'')+((p[1]||'')[0]||'')).toUpperCase()||'?'};
+function render(){
+  $('#ttl').textContent=settings.title||'Claude AI';$('#sStart').textContent=settings.start;
+  const done=roster.filter(p=>checks[p.id]);const late=done.filter(p=>isLate(checks[p.id])).length;
+  $('#cnt').textContent=done.length+'/'+roster.length;
+  $('#sOn').textContent=done.length-late;$('#sLate').textContent=late;$('#sLeft').textContent=roster.length-done.length;
+  $('#arc').style.strokeDashoffset=326.7*(1-(roster.length?done.length/roster.length:0));
+  $('#empty').hidden=roster.length>0;const ns=$('#noSheet');if(ns)ns.hidden=!!(typeof gasUrl==='function'&&gasUrl());
+  const nq=norm(q);
+  const rows=roster.filter(p=>{const c=checks[p.id];if(filter==='wait'&&c)return false;if(filter==='done'&&!c)return false;
+    return !nq||norm([p.name,p.org,p.email,p.phone,p.by].join(' ')).includes(nq)});
+  if(filter==='done')rows.sort((a,b)=>checks[a.id].at.localeCompare(checks[b.id].at));
+  $('#list').innerHTML=rows.map(p=>{const c=checks[p.id];
+    const sub=[p.org,p.email||(p.by?'มากับ '+p.by:'')].filter(Boolean).join(' · ');
+    if(!c)return`<article class="card" data-id="${esc(p.id)}"><div class="av" style="${avs(p.id)}">${initials(p.name)}</div>
+      <div class="who"><b>${esc(p.name)}</b><span>${esc(sub)||'&nbsp;'}</span></div>
+      <button class="btn pri" data-act="in">เช็คอิน</button></article>`;
+    const lm=lateMin(c),L=isLate(c);
+    return`<article class="card done${lastIn===p.id?' just':''}" data-id="${esc(p.id)}"><div class="av"><svg class="i" viewBox="0 0 24 24" style="fill:currentColor;stroke:none"><path d="M12 21s-7.5-4.6-9.5-9.2C1 8.3 3.2 4.5 7 4.5c2.1 0 3.6 1.1 5 2.9 1.4-1.8 2.9-2.9 5-2.9 3.8 0 6 3.8 4.5 7.3C19.5 16.4 12 21 12 21z"/></svg></div>
+      <div class="who"><b>${esc(p.name)}</b><div class="meta"><span class="time">${hm(c.at)} น.</span><span class="pill${L?' late':''}">${L?'สาย '+lm+' นาที':(lm<0?'มาก่อนเวลา':'ตรงเวลา')}</span></div></div>
+      <div class="side">${c.sig?`<img class="sig" alt="ลายเซ็น" src="${c.sig}" data-act="sig">`:''}
+      <button class="x" data-act="undo" aria-label="ยกเลิกการเช็คอิน"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div></article>`}).join('')
+    ||(roster.length?`<p class="note">ไม่พบรายชื่อที่ตรงกับการค้นหา</p>`:'');
+  lastIn=null;
+}
+
+/* ---------- dialogs ---------- */
+const ov=$('#ov'),dlg=$('#dlg');let onClose=null;
+function open(html,after){dlg.innerHTML=html;ov.classList.add('on');after&&after();const f=dlg.querySelector('[autofocus],input,button.pri');f&&f.focus()}
+function close(){ov.classList.remove('on');dlg.innerHTML='';onClose&&onClose();onClose=null}
+ov.addEventListener('click',e=>{if(e.target===ov)close()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&ov.classList.contains('on'))close()});
+dlg.addEventListener('click',e=>{if(e.target.closest('[data-close]'))close()});
+
+function sigPad(box,onChange){
+  const cv=box.querySelector('canvas'),ctx=cv.getContext('2d');let drawing=false,has=false,last=null;
+  const fit=()=>{const r=cv.getBoundingClientRect(),k=window.devicePixelRatio||1;cv.width=r.width*k;cv.height=r.height*k;ctx.setTransform(k,0,0,k,0,0);ctx.lineWidth=2.6;ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#2e1d10'};
+  fit();
+  const pt=e=>{const r=cv.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}};
+  cv.addEventListener('pointerdown',e=>{drawing=true;cv.setPointerCapture(e.pointerId);last=pt(e);ctx.beginPath();ctx.arc(last.x,last.y,1.2,0,7);ctx.fillStyle='#2e1d10';ctx.fill();if(!has){has=true;box.classList.add('has');onChange(true)}});
+  cv.addEventListener('pointermove',e=>{if(!drawing)return;const p=pt(e);ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();last=p});
+  const end=()=>{drawing=false};cv.addEventListener('pointerup',end);cv.addEventListener('pointercancel',end);
+  return{clear(){ctx.clearRect(0,0,cv.width,cv.height);has=false;box.classList.remove('has');onChange(false)},
+    has:()=>has,
+    png(){const o=document.createElement('canvas');o.width=360;o.height=140;const x=o.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,360,140);x.drawImage(cv,0,0,360,140);return o.toDataURL('image/png')}};
+}
+
+function checkIn(p){
+  open(`<p class="hello">สวัสดีค่ะ ยินดีต้อนรับนะคะ</p><h2>${esc(p.name)}</h2><p class="lead">${esc([p.org,p.email].filter(Boolean).join(' · '))||'ยืนยันการเข้าเรียน'}</p>
+    <div class="big clock" id="mClock">${hm(Date.now())} น.</div>
+    <label class="f">เซ็นชื่อในกรอบด้านล่าง${settings.requireSig?'':' (ไม่บังคับ)'}</label>
+    <div class="pad" id="pad"><canvas></canvas><div class="hint">เซ็นชื่อตรงนี้นะคะ</div></div>
+    <div class="acts"><button class="btn ghost" id="mClr">ล้างลายเซ็น</button><span class="sp"></span>
+    <button class="btn" data-close>ยกเลิก</button><button class="btn pri" id="mOk" ${settings.requireSig?'disabled':''}><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>ยืนยันเช็คอิน</button></div>`);
+  const ok=$('#mOk'),sp=sigPad($('#pad'),h=>{ok.disabled=settings.requireSig&&!h});
+  $('#mClr').onclick=()=>sp.clear();
+  ok.onclick=async()=>{ok.disabled=true;const c={at:new Date().toISOString(),sig:sp.has()?sp.png():'',name:p.name,org:p.org||''};c.late=Math.max(0,lateMin(c));c.status=isLate(c)?'สาย':'ตรงเวลา';
+    const r=ok.getBoundingClientRect();try{lastIn=p.id;await store.checkin(p.id,c);close();burst(r.left+r.width/2,r.top+r.height/2);toast(`เย้! ${p.name} เช็คอินแล้ว ${hm(c.at)} น.`,()=>store.uncheck(p.id))}catch(e){ok.disabled=false}};
+}
+function confirmBox(title,msg,label,fn){
+  open(`<h2>${esc(title)}</h2><p class="lead">${esc(msg)}</p><div class="acts"><button class="btn" data-close>ไม่ใช่</button><button class="btn pri" id="cOk">${esc(label)}</button></div>`);
+  $('#cOk').onclick=async()=>{close();await fn()};
+}
+function addPerson(){
+  open(`<h2>เพิ่มผู้เข้าเรียน</h2><p class="lead">สำหรับคนที่ไม่มีชื่อในรายชื่อ (walk-in)</p>
+    <label class="f" for="aN">ชื่อ-นามสกุล</label><input class="in" id="aN" autofocus>
+    <div class="row2"><div><label class="f" for="aO">บริษัท / หน่วยงาน</label><input class="in" id="aO"></div>
+    <div><label class="f" for="aE">อีเมล</label><input class="in" id="aE" type="email"></div></div>
+    <div class="acts"><button class="btn" data-close>ยกเลิก</button><button class="btn pri" id="aOk">เพิ่มชื่อ</button></div>`);
+  const go=async()=>{const n=$('#aN').value.trim();if(!n){$('#aN').focus();return}
+    if(roster.some(p=>norm(p.name)===norm(n))){toast('มีชื่อนี้อยู่แล้ว');return}
+    await store.roster([...roster,{id:uid(),name:n,org:$('#aO').value.trim(),email:$('#aE').value.trim()}]);close();toast('เพิ่ม '+n+' แล้ว')};
+  $('#aOk').onclick=go;$('#aN').addEventListener('keydown',e=>{if(e.key==='Enter')go()});
+}
+
+/* ---------- import CSV / Excel / paste ---------- */
+function parseDelim(t){
+  t=t.replace(/^﻿/,'');const first=t.split(/\r?\n/)[0]||'';
+  const d=[['\t',(first.match(/\t/g)||[]).length],[',',(first.match(/,/g)||[]).length],[';',(first.match(/;/g)||[]).length]].sort((a,b)=>b[1]-a[1])[0][0];
+  const rows=[];let row=[],cell='',inq=false;
+  for(let i=0;i<t.length;i++){const ch=t[i];
+    if(inq){if(ch==='"'){if(t[i+1]==='"'){cell+='"';i++}else inq=false}else cell+=ch}
+    else if(ch==='"')inq=true;else if(ch===d){row.push(cell);cell=''}
+    else if(ch==='\n'||ch==='\r'){if(ch==='\r'&&t[i+1]==='\n')i++;row.push(cell);rows.push(row);row=[];cell=''}
+    else cell+=ch}
+  row.push(cell);rows.push(row);return rows;
+}
+function toPeople(rows){
+  rows=rows.map(r=>r.map(c=>String(c??'').trim())).filter(r=>r.some(Boolean));if(!rows.length)return[];
+  const h=rows[0].map(norm),find=re=>h.findIndex(x=>re.test(x));
+  let iF=find(/^(ชื่อ-?นามสกุล|ชื่อ ?- ?สกุล|ชื่อ-สกุล|full ?name|name|ชื่อผู้เข้าเรียน)$/),iFirst=-1,iLast=-1;
+  if(iF<0){iFirst=find(/^(ชื่อ|first ?name|firstname|given)/);iLast=find(/^(นามสกุล|สกุล|last ?name|lastname|surname)/)}
+  const iO=find(/(บริษัท|หน่วยงาน|องค์กร|company|org|organization|แผนก|department)/),iE=find(/(อีเมล|e-?mail)/),iP=find(/(โทร|phone|mobile|tel)/);
+  const hasHead=iF>=0||iFirst>=0||iE>=0;if(!hasHead)iF=0;
+  const iPos=hasHead?find(/^(ตำแหน่ง|position|title)$/):-1;
+  const extra=hasHead?h.map((x,i)=>/^(ชื่อ-?นามสกุล|name) ?[2-9]$/.test(x)?i:-1).filter(i=>i>=0):[];
+  const PF=/^(นางสาว|นาง|นาย|น\.ส\.|ดร\.|mr\.?|mrs\.?|ms\.?|miss)\s*/i,cl=s=>String(s||'').replace(/\s+/g,' ').trim().replace(PF,'').trim(),dash=s=>/^[-–]?$/.test(String(s||'').trim())?'':String(s).trim();
+  const seen=new Map();
+  (hasHead?rows.slice(1):rows).forEach(r=>{
+    const name=cl(iF>=0?r[iF]:[r[iFirst],iLast>=0?r[iLast]:''].join(' '));if(!name)return;
+    const org=dash(iO>=0?r[iO]:(hasHead?'':r[1]));
+    const add=p=>{const k=p.name.replace(/\s/g,'').toLowerCase();const old=seen.get(k);seen.set(k,{...p,id:old?old.id:uid()})};
+    add({name,org,email:dash(iE>=0?r[iE]:(hasHead?'':r[2])),phone:dash(iP>=0?r[iP]:''),pos:dash(iPos>=0?r[iPos]:''),by:''});
+    extra.forEach(i=>{const n=cl(r[i]);if(n)add({name:n,org,email:'',phone:'',pos:'',by:name})});
+  });
+  return[...seen.values()];
+}
+let XL=null;const loadXLSX=()=>XL||(XL=new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';s.onload=()=>res(window.XLSX);s.onerror=()=>{XL=null;rej()};document.head.appendChild(s)}));
+async function readFile(f){
+  if(/\.xlsx?$/i.test(f.name)){const X=await loadXLSX();const wb=X.read(await f.arrayBuffer(),{type:'array'});return X.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:'',raw:false})}
+  const buf=await f.arrayBuffer();let t=new TextDecoder('utf-8').decode(buf);
+  if(t.includes(String.fromCharCode(65533)))try{t=new TextDecoder('windows-874').decode(buf)}catch(e){}
+  return parseDelim(t);
+}
+let pending=[];
+function importDlg(){
+  pending=[];
+  open(`<h2>นำเข้ารายชื่อผู้เข้าเรียน</h2><p class="lead">รองรับไฟล์ .csv, .xlsx, .xls หรือวางข้อมูลที่คัดลอกจาก Excel / Google Sheet (แถวแรกเป็นหัวคอลัมน์ เช่น ชื่อ, นามสกุล, บริษัท, อีเมล)</p>
+    <div class="drop" id="drop" tabindex="0" role="button"><b>เลือกไฟล์</b> หรือลากไฟล์มาวางที่นี่</div>
+    <label class="f" for="paste">หรือวางรายชื่อตรงนี้</label><textarea class="in" id="paste" placeholder="ชื่อ&#9;นามสกุล&#9;บริษัท&#10;สมชาย&#9;ใจดี&#9;Global Food"></textarea>
+    <div id="prev"></div>
+    <div class="acts"><button class="btn" data-close>ยกเลิก</button><span class="sp"></span>
+    <button class="btn" id="iRep" disabled>แทนที่รายชื่อเดิม</button><button class="btn pri" id="iAdd" disabled>เพิ่มเข้ารายชื่อ</button></div>`);
+  const drop=$('#drop');
+  drop.onclick=()=>$('#file').click();drop.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$('#file').click()}};
+  drop.ondragover=e=>{e.preventDefault();drop.classList.add('over')};drop.ondragleave=()=>drop.classList.remove('over');
+  drop.ondrop=e=>{e.preventDefault();drop.classList.remove('over');const f=e.dataTransfer.files[0];f&&handleFile(f)};
+  let tm;$('#paste').oninput=e=>{clearTimeout(tm);tm=setTimeout(()=>preview(toPeople(parseDelim(e.target.value))),250)};
+  $('#iAdd').onclick=()=>commit(false);$('#iRep').onclick=()=>commit(true);
+}
+async function handleFile(f){try{preview(toPeople(await readFile(f)),f.name)}catch(e){$('#prev').innerHTML=`<div class="prev">อ่านไฟล์ไม่ได้ ลองบันทึกเป็น CSV (UTF-8) แล้วนำเข้าอีกครั้ง</div>`}}
+function preview(list,src){
+  pending=list;const have=new Set(roster.map(p=>norm(p.name)));const dup=list.filter(p=>have.has(norm(p.name))).length;
+  $('#prev').innerHTML=list.length?`<div class="prev">${src?esc(src)+': ':''}พบ <b>${list.length}</b> รายชื่อ${dup?` (ซ้ำกับที่มีอยู่ ${dup} คน จะข้ามเมื่อกดเพิ่ม)`:''}
+    <ol>${list.slice(0,5).map(p=>`<li>${esc(p.name)}${p.org?' · '+esc(p.org):''}</li>`).join('')}</ol>${list.length>5?'และอีก '+(list.length-5)+' คน':''}</div>`:`<div class="prev">ไม่พบรายชื่อ ตรวจสอบว่ามีคอลัมน์ชื่อ</div>`;
+  $('#iAdd').disabled=$('#iRep').disabled=!list.length;
+}
+async function commit(replace){
+  if(!pending.length)return;let next;
+  if(replace)next=pending;else{const have=new Set(roster.map(p=>norm(p.name)));next=[...roster];pending.forEach(p=>{const k=norm(p.name);if(!have.has(k)){have.add(k);next.push(p)}})}
+  const added=next.length-(replace?0:roster.length);
+  await store.roster(next);
+  if(replace)await store.clear();
+  close();toast(replace?`แทนที่ด้วย ${next.length} รายชื่อ`:`เพิ่ม ${added} รายชื่อ`);
+}
+$('#file').onchange=e=>{const f=e.target.files[0];e.target.value='';f&&handleFile(f)};
+
+/* ---------- export for Google Sheets ---------- */
+function table(){
+  const head=['ลำดับ','ชื่อ-นามสกุล','บริษัท','ตำแหน่ง','อีเมล','เบอร์โทร','ลงทะเบียนโดย','สถานะ','วันที่','เวลาเช็คอิน','ตรงเวลา/สาย','สายกี่นาที','มีลายเซ็น'];
+  return[head,...roster.map((p,i)=>{const c=checks[p.id];const d=c&&new Date(c.at);
+    return[i+1,p.name,p.org||'',p.pos||'',p.email||'',p.phone||'',p.by||'',c?'มาแล้ว':'ยังไม่มา',c?d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate()):'',c?hm(c.at):'',c?(isLate(c)?'สาย':'ตรงเวลา'):'',c?Math.max(0,lateMin(c)):'',c?(c.sig?'ใช่':'ไม่'):'']})];
+}
+function exportDlg(){
+  open(`<h2>ส่งออกข้อมูลการเช็คชื่อ</h2><p class="lead">${Object.keys(checks).length} จาก ${roster.length} คนเช็คอินแล้ว ส่งออกเป็นไฟล์ CSV เพื่อนำเข้า Google Sheet หรือคัดลอกแล้ววางลงใน Sheet ได้ทันที</p>
+    <div class="acts" style="justify-content:flex-start"><button class="btn pri" id="eCsv">ดาวน์โหลด CSV</button><button class="btn" id="eCopy">คัดลอกไปวางใน Google Sheet</button></div>
+    <p class="note" id="eMsg" style="margin-top:12px"></p><div class="acts"><button class="btn" data-close>ปิด</button></div>`);
+  const t=table();
+  $('#eCsv').onclick=async()=>{const csv='﻿'+t.map(r=>r.map(c=>{c=String(c);return/[",\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c}).join(',')).join('\r\n');
+    const d=new Date(),fn=`checkin-${d.getFullYear()}${pad2(d.getMonth()+1)}${pad2(d.getDate())}.csv`;
+    if(!dl){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=fn;document.body.appendChild(a);a.click();a.remove();$('#eMsg').textContent='ดาวน์โหลดแล้ว';return}
+    try{await dl.save({filename:`checkin-${d.getFullYear()}${pad2(d.getMonth()+1)}${pad2(d.getDate())}.csv`,data:csv});$('#eMsg').textContent='บันทึกไฟล์แล้ว'}catch(e){$('#eMsg').textContent=e&&e.code==='declined'?'ยกเลิกการดาวน์โหลด':'ดาวน์โหลดไม่ได้ในหน้านี้ ลองใช้ปุ่มคัดลอกแทน'}};
+  $('#eCopy').onclick=async()=>{try{await navigator.clipboard.writeText(t.map(r=>r.join('\t')).join('\n'));$('#eMsg').textContent='คัดลอกแล้ว เปิด Google Sheet แล้วกดวาง (Ctrl/⌘ + V) ที่ช่อง A1'}catch(e){$('#eMsg').textContent='คัดลอกไม่ได้ในเบราว์เซอร์นี้'}};
+}
+function settingsDlg(){
+  open(`<h2>ตั้งค่าคลาส</h2>
+    <label class="f" for="sT">ชื่อคลาส</label><input class="in" id="sT" value="${esc(settings.title)}">
+    <div class="row2"><div><label class="f" for="sS">เวลาเริ่มเรียน</label><input class="in" id="sS" type="time" value="${esc(settings.start)}"></div>
+    <div><label class="f" for="sG">ผ่อนผันได้ (นาที)</label><input class="in" id="sG" type="number" min="0" max="120" value="${Number(settings.grace)}"></div></div>
+    <label class="check"><input type="checkbox" id="sR" ${settings.requireSig?'checked':''}> บังคับเซ็นชื่อก่อนยืนยัน</label>
+    <label class="f" for="sU">Google Apps Script Web App URL (เว้นว่าง = เก็บในเครื่องนี้)</label><input class="in" id="sU" placeholder="https://script.google.com/macros/s/…/exec" value="${esc(gasUrl())}">
+    <div class="acts" style="justify-content:flex-start;border-top:1px solid var(--line);padding-top:14px">
+      <button class="btn danger" id="sNew">เริ่มวันใหม่ (ล้างการเช็คอิน)</button><button class="btn danger" id="sWipe">ลบรายชื่อทั้งหมด</button></div>
+    <div class="acts"><button class="btn" data-close>ยกเลิก</button><button class="btn pri" id="sOk">บันทึก</button></div>`);
+  $('#sOk').onclick=async()=>{const u=$('#sU').value.trim();if(u!==gasUrl()){try{localStorage.setItem(LS+'-gas',u)}catch(e){}location.reload();return}await store.settings({title:$('#sT').value.trim()||'Claude AI',start:$('#sS').value||'09:00',grace:Math.max(0,Number($('#sG').value)||0),requireSig:$('#sR').checked});close();toast('บันทึกการตั้งค่าแล้ว')};
+  $('#sNew').onclick=()=>confirmBox('เริ่มวันใหม่?','การเช็คอินและลายเซ็นทั้งหมดของวันนี้จะถูกล้าง แต่รายชื่อยังอยู่ แนะนำให้ส่งออกข้อมูลก่อน','ล้างการเช็คอิน',async()=>{await store.clear();toast('เริ่มวันใหม่แล้ว')});
+  $('#sWipe').onclick=()=>confirmBox('ลบรายชื่อทั้งหมด?','รายชื่อและการเช็คอินทั้งหมดจะถูกลบ','ลบทั้งหมด',async()=>{await store.clear();await store.roster([]);toast('ลบรายชื่อแล้ว')});
+}
+
+/* ---------- celebration ---------- */
+function burst(x,y){if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const H='M12 21s-7.5-4.6-9.5-9.2C1 8.3 3.2 4.5 7 4.5c2.1 0 3.6 1.1 5 2.9 1.4-1.8 2.9-2.9 5-2.9 3.8 0 6 3.8 4.5 7.3C19.5 16.4 12 21 12 21z',S='M12 2l2.6 7.4L22 12l-7.4 2.6L12 22l-2.6-7.4L2 12l7.4-2.6z',C=['#f2918a','#f2c46d','#b07a45','#e8a07a','#d6b2e0'];
+  for(let i=0;i<14;i++){const e=document.createElement('span');e.className='burst';const a=i/14*6.283,d=70+Math.random()*70;
+    e.style.cssText=`left:${x}px;top:${y}px;--c:${C[i%5]};--x:${Math.cos(a)*d}px;--y:${Math.sin(a)*d-40}px;--r:${Math.random()*180-90}deg`;
+    e.innerHTML=`<svg viewBox="0 0 24 24"><path d="${i%3?H:S}"/></svg>`;document.body.appendChild(e);setTimeout(()=>e.remove(),1000)}}
+/* ---------- toast ---------- */
+let tt;function toast(m,undo){$('#tMsg').textContent=m;const b=$('#tBtn');b.hidden=!undo;b.onclick=async()=>{$('#toast').classList.remove('on');await undo()};
+  $('#toast').classList.add('on');clearTimeout(tt);tt=setTimeout(()=>$('#toast').classList.remove('on'),undo?6000:3000)}
+
+/* ---------- events ---------- */
+$('#list').addEventListener('click',e=>{const a=e.target.closest('[data-act]');if(!a)return;const id=a.closest('.card').dataset.id,p=roster.find(x=>x.id===id);if(!p)return;
+  if(a.dataset.act==='in')checkIn(p);
+  if(a.dataset.act==='undo')confirmBox('ยกเลิกการเช็คอิน?',`${p.name} จะกลับเป็นสถานะ "ยังไม่มา" และลายเซ็นจะถูกลบ`,'ยกเลิกเช็คอิน',()=>store.uncheck(id));
+  if(a.dataset.act==='sig')open(`<h2>ลายเซ็นของ ${esc(p.name)}</h2><p class="lead">เช็คอินเวลา ${hm(checks[id].at)} น.</p><img src="${checks[id].sig}" alt="ลายเซ็น" style="width:100%;background:#fff;border-radius:14px;border:1px solid var(--line)"><div class="acts"><button class="btn pri" data-close>ปิด</button></div>`)});
+$('#q').addEventListener('input',e=>{q=e.target.value;render()});
+$$('.seg button').forEach(b=>b.onclick=()=>{filter=b.dataset.f;$$('.seg button').forEach(x=>x.setAttribute('aria-pressed',x===b));render()});
+$('#bImp').onclick=importDlg;$('#bImp2').onclick=importDlg;$('#bAdd').onclick=addPerson;$('#bExp').onclick=exportDlg;$('#bSet').onclick=settingsDlg;
+
+const tick=()=>{const d=new Date();$('#clock').textContent=hm(d)+' น.';const m=$('#mClock');if(m)m.textContent=hm(d)+' น.'};
+$('#ver').textContent='v'+APP_VERSION;$('#vBadge').textContent='v'+APP_VERSION;
+const verDlg=()=>open(`<h2>ประวัติเวอร์ชัน</h2><p class="lead">ตอนนี้ใช้เวอร์ชัน <b>v${APP_VERSION}</b></p><ol class="ver-list">${CHANGES.map(([v,d,l])=>`<li><b>v${v}</b><small>${d}</small><ul>${l.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></li>`).join('')}</ol><div class="acts"><button class="btn pri" data-close>ปิด</button></div>`);
+$('#vBadge').onclick=verDlg;$('#vFoot').onclick=verDlg;
+$('#today').textContent=new Date().toLocaleDateString('th-TH',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+tick();setInterval(tick,1000);
+
+function gasUrl(){try{return localStorage.getItem(LS+'-gas')??GAS_URL}catch(e){return GAS_URL}}
+store=localStore();render();setMode('');
+const boot=C=>{
+if(C&&C.use){
+  setMode('กำลังเชื่อมต่อฐานข้อมูล…');
+  C.use('downloads').then(d=>{dl=d}).catch(()=>{});
+  C.use('db').then(db=>{if(db){store=dbStore(db)}else{store=localStore();render();setMode('โหมดออฟไลน์: ข้อมูลบันทึกเฉพาะในเครื่องนี้','warn')}})
+   .catch(()=>setMode('โหมดออฟไลน์: ข้อมูลบันทึกเฉพาะในเครื่องนี้','warn'));
+}else setMode('โหมดออฟไลน์: ข้อมูลบันทึกเฉพาะในเครื่องนี้','warn');
+};
+if(gasUrl()){store=gasStore(gasUrl());setMode('กำลังเชื่อมต่อ Google Sheet…')}else{let tries=0;const wait=()=>{if(window.claude&&window.claude.use)boot(window.claude);else if(++tries<20)setTimeout(wait,100);else boot(null)};wait();}
+}
+</script>
+</body>
+</html>
