@@ -3,7 +3,7 @@
 -- เพิ่มผู้ดูแลคนใหม่: insert into public.admins values ('someone@gmail.com');
 
 create table public.admins (email text primary key check (email = lower(email)));
-insert into public.admins values ('thanawanv6@gmail.com');
+insert into public.admins values ('thanawanv6@gmail.com'), ('naweevar@gmail.com');
 
 create or replace function public.is_admin() returns boolean
 language sql stable security definer set search_path = public as $$
