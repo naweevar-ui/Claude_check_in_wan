@@ -1,15 +1,13 @@
 /**
- * ตั้งค่าเว็บเช็คชื่อ
- * GAS_URL: URL ของ Google Apps Script Web App (ลงท้ายด้วย /exec)
- *          ถ้าเว้นว่าง เว็บจะเก็บข้อมูลไว้เฉพาะในเบราว์เซอร์ของเครื่องที่เปิด
- * DEFAULTS: ค่าเริ่มต้นของคลาส (แก้ทีหลังได้ในหน้าตั้งค่าของเว็บ ซึ่งจะบันทึกลง Google Sheet)
+ * ตั้งค่าเว็บเช็คชื่อ (Supabase)
+ * SUPABASE_URL / SUPABASE_KEY: ค่าจาก Supabase > Project Settings > API
+ *   SUPABASE_KEY เป็น publishable key ใส่ในเว็บสาธารณะได้ ข้อมูลถูกป้องกันด้วย Row Level Security
+ * ADMIN_EMAIL: แสดงเป็นคำแนะนำในหน้าเข้าสู่ระบบเท่านั้น
+ *   สิทธิ์ผู้ดูแลจริงอยู่ในตาราง public.admins ใน Supabase
  */
 window.CHECKIN_CONFIG = {
-  GAS_URL: '',
-  DEFAULTS: {
-    title: 'Claude AI',
-    start: '09:00',   // เวลาเริ่มเรียน
-    grace: 10,        // ผ่อนผันได้กี่นาทีก่อนนับว่าสาย
-    requireSig: true  // บังคับเซ็นชื่อ
-  }
+  SUPABASE_URL: 'https://hxwsjksgfptlhbogdyux.supabase.co',
+  SUPABASE_KEY: 'sb_publishable_nVgjDV5fm8flsP0mJ0tyNQ_MAyCJzEg',
+  ADMIN_EMAIL: 'thanawanv6@gmail.com',
+  DEFAULTS: { title: 'Claude AI', start: '09:00', grace: 10, requireSig: true }
 };

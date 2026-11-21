@@ -1,79 +1,62 @@
 # เว็บเช็คชื่อคลาส Claude AI
 
-**เวอร์ชัน 1.1.1** · เว็บจริง: https://naweevar-ui.github.io/Claude_check_in_wan/ · ดูการเปลี่ยนแปลงทั้งหมดใน [CHANGELOG.md](CHANGELOG.md)
+**เวอร์ชัน 2.0.0** · เว็บจริง: https://naweevar-ui.github.io/Claude_check_in_wan/ · ดูการเปลี่ยนแปลงทั้งหมดใน [CHANGELOG.md](CHANGELOG.md)
 
-เว็บเช็คชื่อผู้เข้าเรียน โทนน้ำตาลน่ารัก ใช้ได้ทั้งมือถือ แท็บเล็ต และคอมพิวเตอร์ ผู้เรียนแตะชื่อตัวเอง เซ็นชื่อ แล้วกดยืนยัน ระบบจะบันทึกเวลาและตรวจว่ามาตรงเวลาหรือสาย จากนั้นบันทึกลง **Google Sheet** ทันที
+เว็บเช็คชื่อผู้เข้าเรียน โทนน้ำตาลน่ารัก ใช้ได้ทั้งมือถือ แท็บเล็ต และคอมพิวเตอร์ ผู้เรียนแตะชื่อตัวเอง เซ็นชื่อ แล้วกดยืนยัน ระบบบันทึกเวลาจากเซิร์ฟเวอร์และบอกว่ามาตรงเวลาหรือสาย ข้อมูลทั้งหมดเก็บใน **Supabase**
 
-## ความสามารถ
-- รายชื่อผู้เรียน ค้นหาได้ กรองได้ (ทั้งหมด / ยังไม่มา / มาแล้ว)
-- เช็คอินพร้อมลายเซ็น บันทึกเวลาอัตโนมัติ แสดงสถานะตรงเวลา / สายกี่นาที
-- บันทึกลง Google Sheet และเก็บรูปลายเซ็นไว้ใน Google Drive
-- นำเข้ารายชื่อจาก CSV, Excel (.xlsx/.xls) หรือวางจาก Google Sheet ได้ รองรับไฟล์จาก Google Form ที่ลงทะเบียนได้หลายคนต่อหนึ่งฟอร์ม
-- ส่งออกเป็น CSV หรือคัดลอกไปวางใน Google Sheet
-- เพิ่มชื่อคนที่มาแบบ walk-in, ยกเลิกการเช็คอิน, ปุ่มเริ่มวันใหม่
+## ใครทำอะไรได้บ้าง
+| | ผู้เรียน (ไม่ต้องล็อกอิน) | ผู้ดูแล (ล็อกอินด้วย Google) |
+|---|---|---|
+| ดูรายชื่อ ค้นหา กรอง | ได้ (เห็นแค่ชื่อ บริษัท เวลาเช็คอิน) | ได้ (เห็นอีเมล เบอร์โทร ลายเซ็นด้วย) |
+| เช็คอินพร้อมเซ็นชื่อ | ได้ คนละ 1 ครั้ง | ได้ |
+| ยกเลิกเช็คอิน, ดูลายเซ็น | ไม่ได้ | ได้ |
+| นำเข้ารายชื่อ CSV / Excel, เพิ่มชื่อ walk-in | ไม่ได้ | ได้ |
+| ส่งออก CSV / คัดลอกไป Google Sheet | ไม่ได้ | ได้ |
+| ตั้งค่าเวลาเริ่มเรียน เวลาผ่อนผัน บังคับเซ็นชื่อ, เริ่มวันใหม่ | ไม่ได้ | ได้ |
+
+ผู้ดูแลคือบัญชีที่อยู่ในตาราง `public.admins` ตอนนี้มีบัญชีเดียวคือ **thanawanv6@gmail.com** ถ้าล็อกอินด้วยบัญชีอื่น ระบบจะออกจากระบบให้อัตโนมัติ
 
 ## โครงสร้างไฟล์
 ```
-├── index.html                  หน้าเว็บ (ไฟล์เดียวจบ)
-├── config.js                   ตั้งค่า URL ของ Google Apps Script และค่าเริ่มต้นของคลาส
-├── apps-script/
-│   ├── Code.gs                 โค้ดฝั่ง Google Sheet (วางใน Apps Script)
-│   └── appsscript.json         ไฟล์ตั้งค่าโปรเจกต์ Apps Script (ใช้กับ clasp)
-├── templates/
-│   └── roster-template.csv     ตัวอย่างไฟล์รายชื่อ
-├── VERSION                     เลขเวอร์ชันปัจจุบัน
-├── CHANGELOG.md                บันทึกการเปลี่ยนแปลงแต่ละเวอร์ชัน
-└── README.md
+├── index.html            หน้าเช็คชื่อ
+├── login.html            หน้าเข้าสู่ระบบผู้ดูแล (Google)
+├── config.js             URL และ publishable key ของ Supabase
+├── supabase/schema.sql   โครงสร้างฐานข้อมูล ตาราง สิทธิ์ (RLS) และฟังก์ชัน
+├── templates/roster-template.csv  ตัวอย่างไฟล์รายชื่อ
+├── VERSION, CHANGELOG.md
 ```
 
-## ขั้นตอนที่ 1: ตั้งค่า Google Sheet (ประมาณ 5 นาที)
-1. สร้าง Google Sheet ใหม่ แล้วไปที่ **ส่วนขยาย > Apps Script**
-2. ลบโค้ดเดิม วางโค้ดจาก `apps-script/Code.gs` ทั้งหมด แล้วกดบันทึก
-3. ไปที่ **Project Settings** (ไอคอนเฟือง) ตั้ง Time zone เป็น **(GMT+07:00) Bangkok**
-4. กลับมาที่หน้าโค้ด เลือกฟังก์ชัน `setup` แล้วกด **Run** จากนั้นกดอนุญาตสิทธิ์ ระบบจะสร้างแท็บ Roster, Checkins และ Settings ให้
-5. กด **Deploy > New deployment** เลือกประเภท **Web app**
-   - Execute as: **Me**
-   - Who has access: **Anyone**
-6. กด Deploy แล้วคัดลอก **Web app URL** (ลงท้ายด้วย `/exec`)
+## ฐานข้อมูล Supabase
+โปรเจกต์ `claude-class-checkin` (ref `hxwsjksgfptlhbogdyux`, ภูมิภาค Singapore) ติดตั้งตาราง สิทธิ์ และรายชื่อ 22 คนไว้แล้ว
+- `roster` รายชื่อผู้เข้าเรียน
+- `checkins` การเช็คอิน คนละ 1 แถว เก็บเวลา สถานะ และลายเซ็น (PNG)
+- `class_settings` ชื่อคลาส เวลาเริ่มเรียน เวลาผ่อนผัน บังคับเซ็นชื่อ
+- `admins` อีเมลผู้ดูแล
 
-## ขั้นตอนที่ 2: ใส่ URL ในเว็บ
-เปิดไฟล์ `config.js` แล้ววาง URL ที่คัดลอกมา:
-```js
-GAS_URL: 'https://script.google.com/macros/s/xxxxxxxx/exec',
-```
+`SUPABASE_KEY` ใน `config.js` เป็น publishable key ออกแบบมาให้ใส่ในเว็บสาธารณะได้ ข้อมูลถูกป้องกันด้วย Row Level Security
 
-## ขั้นตอนที่ 3: ขึ้นเว็บด้วย GitHub Pages
-1. สร้าง repository ใหม่บน GitHub แล้วอัปโหลดไฟล์ทั้งหมดในโฟลเดอร์นี้
-2. ไปที่ **Settings > Pages** เลือก Source: **Deploy from a branch**, Branch: **main** / **(root)** แล้วกด Save
-3. รอ 1–2 นาที จะได้ลิงก์ เช่น `https://<username>.github.io/<repo>/` ใช้ลิงก์นี้ทำ QR code ให้ผู้เรียนสแกนเช็คอินได้
+## ตั้งค่าล็อกอินด้วย Google (ทำครั้งเดียว)
+1. **Google Cloud Console** → https://console.cloud.google.com/apis/credentials (ล็อกอินด้วย thanawanv6@gmail.com)
+   - ถ้ายังไม่มีโปรเจกต์ ให้สร้างโปรเจกต์ใหม่
+   - **OAuth consent screen**: เลือก External ใส่ชื่อแอป `เช็คชื่อ Claude AI` และอีเมลติดต่อ แล้วกด Publish app (หรือเพิ่ม thanawanv6@gmail.com เป็น Test user)
+   - **Create credentials → OAuth client ID** → Application type: **Web application**
+   - Authorized JavaScript origins: `https://naweevar-ui.github.io`
+   - Authorized redirect URIs: `https://hxwsjksgfptlhbogdyux.supabase.co/auth/v1/callback`
+   - กด Create แล้วคัดลอก **Client ID** และ **Client secret**
+2. **Supabase Dashboard** → https://supabase.com/dashboard/project/hxwsjksgfptlhbogdyux/auth/providers
+   - เปิด **Google** วาง Client ID และ Client secret แล้วกด Save
+3. **Supabase → Authentication → URL Configuration** (https://supabase.com/dashboard/project/hxwsjksgfptlhbogdyux/auth/url-configuration)
+   - Site URL: `https://naweevar-ui.github.io/Claude_check_in_wan/`
+   - Redirect URLs: เพิ่ม `https://naweevar-ui.github.io/Claude_check_in_wan/**`
+4. เปิด https://naweevar-ui.github.io/Claude_check_in_wan/login.html แล้วกด "เข้าสู่ระบบด้วย Google"
 
-## ขั้นตอนที่ 4: ใส่รายชื่อผู้เรียน
-เลือกได้ 2 ทาง:
-- **ผ่านหน้าเว็บ:** กด **นำเข้ารายชื่อ** แล้วเลือกไฟล์ CSV / Excel หรือไฟล์ที่ดาวน์โหลดจาก Google Form ระบบจะเขียนลงแท็บ Roster ให้
-- **วางใน Sheet โดยตรง:** ในแท็บ **Roster** ใส่ชื่อในคอลัมน์ B แล้วเว้นคอลัมน์ id ว่างไว้ ระบบจะสร้าง id ให้เอง
+## งานประจำของผู้ดูแล
+- **ก่อนเริ่มคลาส:** ล็อกอิน → นำเข้ารายชื่อ (ถ้ามีรายชื่อใหม่) → ตั้งค่าเวลาเริ่มเรียน
+- **หลังจบคลาส:** ส่งออก CSV หรือคัดลอกไปวางใน Google Sheet
+- **คลาสวันใหม่:** ตั้งค่า → เริ่มวันใหม่ (ล้างการเช็คอิน รายชื่อยังอยู่)
+- **เพิ่มผู้ดูแล:** Supabase → SQL Editor → `insert into public.admins values ('อีเมล@gmail.com');`
 
-## ข้อมูลใน Google Sheet
-| แท็บ | เก็บอะไร |
-|---|---|
-| Roster | id, ชื่อ-นามสกุล, บริษัท, ตำแหน่ง, อีเมล, เบอร์โทร, ลงทะเบียนโดย |
-| Checkins | id, ชื่อ, บริษัท, วันที่, เวลา, ตรงเวลา/สาย, สายกี่นาที, ลิงก์รูปลายเซ็นใน Drive (คอลัมน์ at/sig ถูกซ่อนไว้ ห้ามลบ) |
-| Settings | ชื่อคลาส, เวลาเริ่ม, เวลาผ่อนผัน, บังคับเซ็นชื่อ |
+## นำเข้ารายชื่อ
+รองรับ `.csv`, `.xlsx`, `.xls` หรือวางจาก Excel / Google Sheet แถวแรกเป็นหัวคอลัมน์ เช่น `ชื่อ-นามสกุล`, `ชื่อ`, `นามสกุล`, `บริษัท`, `ตำแหน่ง`, `อีเมล`, `เบอร์โทร` และรองรับไฟล์จาก Google Form ที่ลงทะเบียนได้หลายคนต่อฟอร์ม (คอลัมน์ `ชื่อ-นามสกุล 2`, `3` …)
 
-## ข้อควรระวังเรื่องความเป็นส่วนตัว
-- **ห้ามอัปโหลดไฟล์รายชื่อจริง** (เช่น .xlsx จาก Google Form) ขึ้น GitHub เพราะ repository สาธารณะใครก็เปิดดูได้ ไฟล์ `.gitignore` กันไฟล์ .xlsx, .xls และ roster*.csv ไว้ให้แล้ว
-- ใน `index.html` มีรายชื่อตั้งต้น (ชื่อ บริษัท ผู้ลงทะเบียน) เพื่อให้เปิดเว็บแล้วรายชื่อขึ้นทันที ซึ่งใครเปิด repo ก็เห็น ไม่มีอีเมลหรือเบอร์โทร ถ้าไม่ต้องการ ให้แก้เป็น `const SEED=[];` แล้วนำเข้ารายชื่อผ่าน Google Sheet แทน
-- ลายเซ็น เวลาเช็คอิน อีเมล และเบอร์โทร เก็บอยู่ใน Google Sheet และ Drive ของคุณเท่านั้น ไม่ได้อยู่ใน repo
-- คนที่รู้ URL ของ Web app จะอ่านและแก้ข้อมูลได้ และเมื่อใส่ URL ใน `config.js` บน repo สาธารณะ URL จะถูกเปิดเผยด้วย หลังจบคลาสแนะนำให้ไปที่ **Deploy > Manage deployments** แล้ว **Archive** deployment นั้น
-
-## เมื่อแก้โค้ด Code.gs
-ต้องไปที่ **Deploy > Manage deployments > แก้ไข (ไอคอนดินสอ) > Version: New version > Deploy** ทุกครั้ง URL จะยังเป็นอันเดิม
-
-## การออกเวอร์ชันใหม่
-1. แก้เลขเวอร์ชันให้ตรงกันทั้ง 3 ที่: ไฟล์ `VERSION`, `APP_VERSION` ใน `index.html` และ `VERSION` ใน `apps-script/Code.gs` แล้วเพิ่มรายการใหม่ไว้บนสุดของ `CHANGES` ใน `index.html` เพื่อให้โชว์ในหน้าต่างประวัติเวอร์ชันบนเว็บ
-2. เขียนสิ่งที่เปลี่ยนไว้ใน `CHANGELOG.md`
-3. ถ้าแก้ `Code.gs` ให้วางโค้ดใหม่ใน Apps Script แล้ว Deploy เป็น New version
-4. ตอนอัปโหลดขึ้น GitHub ให้สร้าง tag หรือ Release ชื่อ `v1.1.1` (ตามเลขเวอร์ชัน) เพื่อย้อนกลับไปเวอร์ชันเก่าได้
-5. ท้ายหน้าเว็บจะแสดงเวอร์ชันของหน้าเว็บและของ Google Sheet ถ้าสองเลขไม่ตรงกัน จะมีข้อความเตือนสีส้ม
-
-## ทดสอบในเครื่อง
-เปิด `index.html` ในเบราว์เซอร์ได้เลย ถ้า `GAS_URL` ว่าง ระบบจะเก็บข้อมูลไว้ในเครื่อง (โหมดออฟไลน์)
+ไฟล์รายชื่อจริงอย่าอัปโหลดขึ้น GitHub `.gitignore` กันไฟล์ `.xlsx`, `.xls`, `roster*.csv` ไว้แล้ว

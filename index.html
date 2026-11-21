@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>เช็คชื่อ Claude AI</title>
 <script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=Mali:wght@600;700&display=swap" rel="stylesheet">
 <style>
@@ -129,6 +130,11 @@ textarea.in{border-radius:18px}
 .ver-list{list-style:none;padding:0;margin:0}.ver-list>li{border-left:3px solid var(--line);padding:0 0 14px 16px;position:relative}.ver-list>li::before{content:'';position:absolute;left:-8px;top:4px;width:13px;height:13px;border-radius:50%;background:var(--g)}.ver-list>li:first-child::before{background:#f2c46d;box-shadow:0 0 0 4px #f2c46d44}.ver-list b{font-family:Mali,Anuphan,sans-serif;font-size:17px}.ver-list small{color:var(--mute);margin-left:6px}.ver-list ul{margin:4px 0 0;padding-left:18px;color:var(--ink)}
 .ft button{background:none;border:0;color:inherit;font:inherit;cursor:pointer;text-decoration:underline dotted}
 .ft{text-align:center;font-size:13px;color:var(--mute);padding:8px 16px 28px}.ft b{font-weight:600}.ft .warn{color:var(--amber)}
+.adm{display:none!important}body.admin .adm{display:inline-flex!important}body.admin .x.adm{display:grid!important}
+.acct{display:inline-flex;align-items:center;gap:8px;margin-left:8px;vertical-align:middle;background:#ffffff1f;border:1px solid #ffffff33;color:#fff8ef;border-radius:99px;padding:3px 4px 3px 12px;font-size:14px;min-height:32px;text-decoration:none}
+.acct button,.acct a{background:#fff8ef;color:#3b2210;border:0;border-radius:99px;padding:3px 12px;font:600 13px/1.4 Anuphan,sans-serif;cursor:pointer;text-decoration:none;min-height:26px;display:inline-flex;align-items:center}
+.acct.login{padding:3px 4px}.acct .em{max-width:22ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lock{font-size:13px;color:var(--mute);display:inline-flex;gap:6px;align-items:center}
 @keyframes pop{0%{transform:scale(.96)}60%{transform:scale(1.02)}100%{transform:scale(1)}}
 .card.just{animation:pop .45s ease}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -140,7 +146,7 @@ textarea.in{border-radius:18px}
 <header class="band"><div class="wrap hd">
   <div>
     <span class="kick"><span class="dot"></span><span id="today">วันนี้</span> · <span class="clock" id="clock">--:--</span></span>
-    <button class="vbadge" id="vBadge" type="button" aria-label="ดูประวัติเวอร์ชัน"></button>
+    <button class="vbadge" id="vBadge" type="button" aria-label="ดูประวัติเวอร์ชัน"></button><span id="acct"></span>
     <h1>เช็คชื่อคลาส <span id="ttl">Claude AI</span></h1>
     <p class="sub">หาชื่อของคุณ แตะเช็คอิน เซ็นชื่อสวยๆ แล้วกดยืนยันได้เลยค่ะ ระบบจะบันทึกเวลาให้เอง</p>
     <div class="stats">
@@ -180,10 +186,10 @@ textarea.in{border-radius:18px}
   <div class="seg" role="group" aria-label="กรอง">
     <button data-f="all" aria-pressed="true">ทั้งหมด</button><button data-f="wait" aria-pressed="false">ยังไม่มา</button><button data-f="done" aria-pressed="false">มาแล้ว</button>
   </div>
-  <button class="btn" id="bImp" title="นำเข้ารายชื่อ"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v3h16v-3"/></svg><span>นำเข้ารายชื่อ</span></button>
-  <button class="btn" id="bAdd" title="เพิ่มชื่อ"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>เพิ่มชื่อ</span></button>
-  <button class="btn" id="bExp" title="ส่งออก"><svg class="i" viewBox="0 0 24 24"><path d="M12 15V3m0 0L8 7m4-4 4 4M4 17v3h16v-3"/></svg><span>ส่งออก</span></button>
-  <button class="btn ghost" id="bSet" title="ตั้งค่า" aria-label="ตั้งค่า"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+  <button class="btn adm" id="bImp" title="นำเข้ารายชื่อ"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v3h16v-3"/></svg><span>นำเข้ารายชื่อ</span></button>
+  <button class="btn adm" id="bAdd" title="เพิ่มชื่อ"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>เพิ่มชื่อ</span></button>
+  <button class="btn adm" id="bExp" title="ส่งออก"><svg class="i" viewBox="0 0 24 24"><path d="M12 15V3m0 0L8 7m4-4 4 4M4 17v3h16v-3"/></svg><span>ส่งออก</span></button>
+  <button class="btn ghost adm" id="bSet" title="ตั้งค่า" aria-label="ตั้งค่า"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
 </div></div>
 
 <main class="band"><div class="wrap">
@@ -207,9 +213,9 @@ textarea.in{border-radius:18px}
       <circle cx="54" cy="126" r="10" fill="#a8723f"/><circle cx="106" cy="126" r="10" fill="#a8723f"/>
     </svg>
     <h2>ยังไม่มีรายชื่อผู้เข้าเรียนเลยค่ะ</h2>
-    <p>นำเข้ารายชื่อจากไฟล์ CSV หรือ Excel (.xlsx) หรือวางรายชื่อที่คัดลอกมาจาก Google Sheet ได้เลย คอลัมน์ที่รองรับ: ชื่อ, นามสกุล, บริษัท, อีเมล, เบอร์โทร</p>
-    <p id="noSheet" hidden style="color:var(--g);font-weight:600">ยังไม่ได้เชื่อม Google Sheet ค่ะ ใส่ URL ของ Apps Script ในไฟล์ config.js แล้วรายชื่อจาก Sheet จะขึ้นเอง หรือกดนำเข้ารายชื่อจากไฟล์ Excel ด้านล่างได้เลย</p>
-    <button class="btn pri" id="bImp2"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v3h16v-3"/></svg>นำเข้ารายชื่อ</button>
+    <p>ผู้ดูแลนำเข้ารายชื่อจากไฟล์ CSV หรือ Excel (.xlsx) หรือวางรายชื่อที่คัดลอกมาจาก Google Sheet ได้เลย คอลัมน์ที่รองรับ: ชื่อ, นามสกุล, บริษัท, อีเมล, เบอร์โทร</p>
+    <p id="noAdm" style="color:var(--g);font-weight:600">ผู้ดูแลต้อง <a href="login.html">เข้าสู่ระบบ</a> ก่อนจึงจะนำเข้ารายชื่อได้ค่ะ</p>
+    <button class="btn pri adm" id="bImp2"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v3h16v-3"/></svg>นำเข้ารายชื่อ</button>
   </div>
 </div></main>
 
@@ -220,8 +226,9 @@ textarea.in{border-radius:18px}
 
 <script>
 {
-const APP_VERSION='1.1.1';
+const APP_VERSION='2.0.0';
 const CHANGES=[
+ ['2.0.0','21 พ.ย. 2569',['ย้ายฐานข้อมูลทั้งหมดไปที่ Supabase ทุกเครื่องเห็นข้อมูลเดียวกัน อัปเดตเองทุก 10 วินาที','หน้าเข้าสู่ระบบผู้ดูแลด้วย Google (Gmail) ผ่าน Supabase','ผู้เรียนเช็คอินได้โดยไม่ต้องล็อกอิน ส่วนนำเข้ารายชื่อ เพิ่มชื่อ ส่งออก ตั้งค่า ยกเลิกเช็คอิน และดูลายเซ็น ทำได้เฉพาะผู้ดูแล','เวลาเช็คอินใช้เวลาของเซิร์ฟเวอร์ แก้นาฬิกาเครื่องไม่ได้ และเช็คอินซ้ำไม่ได้','อีเมล เบอร์โทร และลายเซ็นไม่แสดงต่อสาธารณะ']],
  ['1.1.1','14 พ.ย. 2569',['ใส่รายชื่อผู้เข้าเรียน 22 คนไว้ในเว็บ เปิดแล้วรายชื่อขึ้นทันที (เฉพาะชื่อและบริษัท ไม่มีอีเมล/เบอร์โทร)']],
  ['1.1.0','14 พ.ย. 2569',['ป้ายเวอร์ชันที่หัวเว็บ กดดูประวัติการพัฒนาได้','ขึ้นเว็บผ่าน GitHub Pages','บอกวิธีเชื่อม Google Sheet เมื่อยังไม่มีรายชื่อ']],
  ['1.0.0','14 พ.ย. 2569',['เช็คอินพร้อมลายเซ็นและเวลา บอกตรงเวลา / สาย','บันทึกลง Google Sheet และเก็บลายเซ็นใน Google Drive','นำเข้ารายชื่อจาก CSV / Excel / Google Form และส่งออก CSV','โทนน้ำตาลพร้อมน้องหมี ใช้ได้ทั้งมือถือ แท็บเล็ต และคอม']]
@@ -234,17 +241,15 @@ const uid=()=>'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const norm=s=>String(s||'').toLowerCase().replace(/\s+/g,' ').trim();
 let roster=[],checks={},settings={title:'Claude AI',start:'09:00',grace:10,requireSig:true,...((window.CHECKIN_CONFIG||{}).DEFAULTS||{})};
 let filter='all',q='',store=null,dl=null,lastIn=null;
-/* ตั้งค่า URL ของ Google Apps Script ได้ที่ไฟล์ config.js */
 const CFG=window.CHECKIN_CONFIG||{};
-const GAS_URL=CFG.GAS_URL||'';
-/* รายชื่อตั้งต้น (เฉพาะชื่อ บริษัท และผู้ลงทะเบียน ไม่มีอีเมล/เบอร์โทร) — ใช้เมื่อยังไม่มีรายชื่อในเครื่องหรือใน Google Sheet */
-const SEED=[{"id": "r01", "name": "ภณธกร วงศ์เจริญ", "org": "เบทาโกร", "by": ""}, {"id": "r02", "name": "วิภาดา พลาธนพร", "org": "Foodle NoodleCo., Ltd", "by": ""}, {"id": "r03", "name": "สิริวรรณ รอดศิริ", "org": "Foodle NoodleCo., Ltd", "by": "วิภาดา พลาธนพร"}, {"id": "r04", "name": "วิศรุต สุดสัตย์", "org": "Foodle NoodleCo., Ltd", "by": "วิภาดา พลาธนพร"}, {"id": "r05", "name": "กิตติธัช ธูปถมพงศ์", "org": "Foodle NoodleCo., Ltd", "by": "วิภาดา พลาธนพร"}, {"id": "r06", "name": "วราภรณ์ หวานล้ำ", "org": "บริษัท โอชาฟูดแพ็ค จำกัด", "by": ""}, {"id": "r07", "name": "ณัฏชา แสวงหอม", "org": "บริษัท โอชาฟูดแพ็ค จำกัด", "by": "วราภรณ์ หวานล้ำ"}, {"id": "r08", "name": "นรพนธ์ จิรัฐิติกาลพงศ์", "org": "บริษัท ซีเอ็ม พรีเมี่ยม ไรซ์ จำกัด", "by": ""}, {"id": "r09", "name": "คงติภูมิ มณีโชค", "org": "บริษัท ซีเอ็ม พรีเมี่ยม ไรซ์ จำกัด", "by": "นรพนธ์ จิรัฐิติกาลพงศ์"}, {"id": "r10", "name": "จิดาภา ทองเกิด", "org": "เทพผดุงพรมะพร้าว จำกัด", "by": ""}, {"id": "r11", "name": "สุชาดา เอี่ยมสำอางค์", "org": "เทพผดุงพรมะพร้าว จำกัด", "by": "จิดาภา ทองเกิด"}, {"id": "r12", "name": "พิชญา พิสุทธิ์พิเชฎฐ์", "org": "เทพผดุงพรมะพร้าว จำกัด", "by": "จิดาภา ทองเกิด"}, {"id": "r13", "name": "วันทนา จุตาลานนท์", "org": "เทพผดุงพรมะพร้าว จำกัด", "by": "จิดาภา ทองเกิด"}, {"id": "r14", "name": "ธนวรรณ ตั้งตรงพานิช", "org": "บริษัท โอชาฟูดแพ็ค จำกัด", "by": ""}, {"id": "r15", "name": "ระวีวรรณ การภักดี", "org": "บริษัท โอชาฟูดแพ็ค จำกัด", "by": "ธนวรรณ ตั้งตรงพานิช"}, {"id": "r16", "name": "คณาธิป จำนงค์", "org": "บริษัท ลาโต้ ฟู้ดแอนด์ดริ้งส์", "by": ""}, {"id": "r17", "name": "พรพิมล ผลเพิ่ม", "org": "บริษัท ลาโต้ ฟู้ดแอนด์ดริ้งส์", "by": "คณาธิป จำนงค์"}, {"id": "r18", "name": "รัตติยากร ฉายหิรัญ", "org": "บริษัท สยาม คอนซูมเมอร์ โปรดักส์ จำกัด", "by": ""}, {"id": "r19", "name": "วิชยุตม์ กีรติธนาภรณ์", "org": "บริษัท เมอร์เดียนท์ จำกัด", "by": ""}, {"id": "r20", "name": "จิตรา คำแหง", "org": "บริษัท โอชาฟูดแพ็ค จำกัด", "by": ""}, {"id": "r21", "name": "อรณิชา ครองศักดิ์ศิริ", "org": "บริษัท โอชาฟูดแพ็ค จำกัด", "by": "จิตรา คำแหง"}, {"id": "r22", "name": "นัทธมน พุทธพรม", "org": "บริษัท โอชาฟูดแพ็ค จำกัด", "by": "จิตรา คำแหง"}];
+const SB_URL=CFG.SUPABASE_URL||'',SB_KEY=CFG.SUPABASE_KEY||'';
+let sb=null,isAdmin=false,userEmail='';
 
 /* ---------- storage: shared db when available, this-device fallback otherwise ---------- */
 const LS='claude-class-checkin-v1';
 function localStore(){
   let d={};try{d=JSON.parse(localStorage.getItem(LS)||'{}')}catch(e){}
-  roster=(d.roster&&d.roster.length)?d.roster:SEED.map(p=>({...p}));checks=d.checks||{};settings={...settings,...(d.settings||{})};
+  roster=d.roster||[];checks=d.checks||{};settings={...settings,...(d.settings||{})};
   const save=()=>{try{localStorage.setItem(LS,JSON.stringify({roster,checks,settings}))}catch(e){toast('บันทึกในเครื่องไม่สำเร็จ')}};
   return{shared:false,
     roster:async r=>{roster=r;save();render()},
@@ -253,41 +258,49 @@ function localStore(){
     uncheck:async id=>{delete checks[id];save();render()},
     clear:async()=>{checks={};save();render()}};
 }
-function dbStore(db){
-  const R=db.doc('class/roster'),S=db.doc('class/settings'),C=db.collection('checkins');
-  let got=0;const t=setTimeout(()=>{if(got<3)setMode('ยังเชื่อมต่อฐานข้อมูลไม่ได้ ข้อมูลที่เห็นอาจยังไม่อัปเดต','warn')},10000);
-  const ok=()=>{if(++got>=3){clearTimeout(t);setMode('')}};
-  const fail=()=>{clearTimeout(t);setMode('การเชื่อมต่อขาดหาย กรุณารีเฟรชหน้า','warn')};
-  let f1=0,f2=0,f3=0;
-  R.onSnapshot(s=>{roster=(s.exists&&s.data().people)||[];if(!f1&&!s.metadata.fromCache){f1=1;ok()}render()},fail);
-  S.onSnapshot(s=>{if(s.exists)settings={...settings,...s.data()};if(!f2&&!s.metadata.fromCache){f2=1;ok()}render()},fail);
-  C.onSnapshot(s=>{const o={};s.docs.forEach(d=>o[d.id]=d.data());checks=o;if(!f3&&!s.metadata.fromCache){f3=1;ok()}render()},fail);
-  const w=async(p,label)=>{try{await p}catch(e){toast(e&&e.code==='quota_exceeded'?'พื้นที่เก็บข้อมูลเต็ม':'บันทึกไม่สำเร็จ'+(label?': '+label:''));throw e}};
-  return{shared:true,
-    roster:r=>w(R.set({people:r}),'รายชื่อ'),
-    settings:s=>w(S.set(s),'ตั้งค่า'),
-    checkin:(id,c)=>w(C.doc(id).set(c),'เช็คอิน'),
-    uncheck:id=>w(C.doc(id).delete(),'ยกเลิก'),
-    clear:async()=>{for(const id of Object.keys(checks))await w(C.doc(id).delete(),'ยกเลิก')}};
+/* ---------- Supabase ---------- */
+const errMsg=e=>{const m=String((e&&(e.message||e.error_description))||e||'');return /JWT|permission|row-level|policy/i.test(m)?'ไม่มีสิทธิ์ทำรายการนี้ (ต้องเข้าสู่ระบบผู้ดูแล)':m.replace(/^.*?:\s*/,'')||'เกิดข้อผิดพลาด'};
+function sbStore(){
+  let busy=0,timer=null;
+  const fromBoard=b=>{settings={...settings,...(b.settings||{})};
+    if(!isAdmin)roster=(b.roster||[]).map(p=>({id:p.id,name:p.name,org:p.org,by:p.by}));
+    const old=checks,o={};Object.entries(b.checks||{}).forEach(([k,v])=>{o[k]={...v,sig:(old[k]&&old[k].sig)||''}});checks=o};
+  const pull=async()=>{
+    const{data,error}=await sb.rpc('get_board');if(error)throw error;fromBoard(data);
+    if(isAdmin){
+      const[r,c]=await Promise.all([sb.from('roster').select('id,name,org,pos,email,phone,by_name,sort').order('sort').order('created_at'),
+        sb.from('checkins').select('roster_id,sig')]);
+      if(r.error)throw r.error;if(c.error)throw c.error;
+      roster=r.data.map(p=>({id:p.id,name:p.name,org:p.org,pos:p.pos,email:p.email,phone:p.phone,by:p.by_name}));
+      c.data.forEach(x=>{if(checks[x.roster_id])checks[x.roster_id].sig=x.sig});
+    }};
+  const refresh=async quiet=>{if(busy&&quiet)return;try{await pull();render();setMode(isAdmin?'เชื่อมต่อ Supabase แล้ว · โหมดผู้ดูแล':'')}
+    catch(e){setMode('เชื่อมต่อฐานข้อมูลไม่ได้ กำลังลองใหม่…','warn')}};
+  refresh();timer=setInterval(()=>{if(!document.hidden)refresh(true)},10000);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh(true)});
+  const run=async(fn,label)=>{busy++;try{const r=await fn();if(r&&r.error)throw r.error;await pull();render()}
+    catch(e){toast(label+'ไม่สำเร็จ: '+errMsg(e));await refresh();throw e}finally{busy--}};
+  const toRow=(p,i)=>({id:p.id,name:p.name,org:p.org||'',pos:p.pos||'',email:p.email||'',phone:p.phone||'',by_name:p.by||'',sort:i+1});
+  return{shared:true,refresh,
+    checkin:(id,c)=>run(async()=>{const{data,error}=await sb.rpc('check_in',{p_id:id,p_sig:c.sig||''});if(error)throw error;fromBoard(data)},'เช็คอิน'),
+    uncheck:id=>run(()=>sb.from('checkins').delete().eq('roster_id',id),'ยกเลิกเช็คอิน'),
+    clear:()=>run(()=>sb.from('checkins').delete().neq('roster_id',''),'ล้างการเช็คอิน'),
+    settings:n=>run(()=>sb.from('class_settings').update({title:n.title,start_time:n.start,grace:n.grace,require_sig:n.requireSig}).eq('id',1),'บันทึกตั้งค่า'),
+    roster:r=>run(async()=>{const keep=new Set(r.map(p=>p.id));const gone=roster.filter(p=>!keep.has(p.id)).map(p=>p.id);
+      if(gone.length){const d=await sb.from('roster').delete().in('id',gone);if(d.error)throw d.error}
+      if(r.length){const u=await sb.from('roster').upsert(r.map(toRow));if(u.error)throw u.error}},'บันทึกรายชื่อ')};
 }
-function showSV(v){const e=$('#sver');if(!e)return;if(!v){e.innerHTML=' · <span class="warn">โค้ดฝั่ง Google Sheet ยังเป็นรุ่นเก่า กรุณาอัปเดต Code.gs</span>';return}
-  e.innerHTML=' · Google Sheet v'+esc(v)+(v!==APP_VERSION?' <span class="warn">(เวอร์ชันไม่ตรงกับหน้าเว็บ กรุณาอัปเดต)</span>':'')}
-function gasStore(url){
-  const call=async b=>{const r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(b)});const j=await r.json();if(!j.ok)throw new Error(j.error||'error');return j};
-  const apply=j=>{showSV(j.version);roster=j.roster||[];checks=j.checks||{};settings={...settings,...(j.settings||{})};render()};
-  let busy=0;
-  const pull=async first=>{if(busy)return;try{const j=await call({action:'all'});if(busy)return;apply(j);setMode('เชื่อมต่อ Google Sheet แล้ว · อัปเดตทุก 15 วินาที');
-    if(first&&!roster.length&&SEED.length){apply(await call({action:'roster',people:SEED}))}}
-    catch(e){setMode('เชื่อมต่อ Google Sheet ไม่ได้ ตรวจสอบ URL ในหน้าตั้งค่า','warn')}};
-  pull(true);setInterval(()=>pull(false),15000);
-  const w=async(b,label,local)=>{busy++;if(local){local();render()}try{apply(await call(b))}catch(e){toast('บันทึกไม่สำเร็จ: '+label);throw e}finally{busy--}};
-  return{shared:true,
-    roster:r=>w({action:'roster',people:r},'รายชื่อ',()=>{roster=r}),
-    settings:s=>w({action:'settings',settings:s},'ตั้งค่า',()=>{settings=s}),
-    checkin:(id,c)=>w({action:'checkin',id,data:c},'เช็คอิน',()=>{checks={...checks,[id]:c}}),
-    uncheck:id=>w({action:'uncheck',id},'ยกเลิก',()=>{const o={...checks};delete o[id];checks=o}),
-    clear:()=>w({action:'clear'},'ล้างการเช็คอิน',()=>{checks={}})};
-}
+function acctUI(){const a=$('#acct');
+  if(!sb){a.innerHTML='';return}
+  if(isAdmin)a.innerHTML=`<span class="acct" title="${esc(userEmail)}"><span>ผู้ดูแล · <span class="em">${esc(userEmail)}</span></span><button id="bOut" type="button">ออกจากระบบ</button></span>`;
+  else a.innerHTML=`<span class="acct login"><a href="login.html">เข้าสู่ระบบผู้ดูแล</a></span>`;
+  const o=$('#bOut');if(o)o.onclick=async()=>{await sb.auth.signOut();location.reload()};
+  document.body.classList.toggle('admin',isAdmin);}
+async function useSession(session){
+  userEmail=(session&&session.user&&session.user.email||'').toLowerCase();isAdmin=false;
+  if(userEmail){const{data,error}=await sb.rpc('is_admin');isAdmin=!error&&data===true;
+    if(!isAdmin){await sb.auth.signOut();userEmail='';toast('บัญชีนี้ไม่มีสิทธิ์ผู้ดูแล จึงออกจากระบบให้แล้วค่ะ')}}
+  acctUI();}
 function setMode(t,cls){const m=$('#mode');m.textContent=t;m.className='note'+(cls?' '+cls:'');m.hidden=!t}
 
 /* ---------- render ---------- */
@@ -302,7 +315,7 @@ function render(){
   $('#cnt').textContent=done.length+'/'+roster.length;
   $('#sOn').textContent=done.length-late;$('#sLate').textContent=late;$('#sLeft').textContent=roster.length-done.length;
   $('#arc').style.strokeDashoffset=326.7*(1-(roster.length?done.length/roster.length:0));
-  $('#empty').hidden=roster.length>0;const ns=$('#noSheet');if(ns)ns.hidden=!!(typeof gasUrl==='function'&&gasUrl());
+  $('#empty').hidden=roster.length>0;const na=$('#noAdm');if(na)na.hidden=isAdmin;
   const nq=norm(q);
   const rows=roster.filter(p=>{const c=checks[p.id];if(filter==='wait'&&c)return false;if(filter==='done'&&!c)return false;
     return !nq||norm([p.name,p.org,p.email,p.phone,p.by].join(' ')).includes(nq)});
@@ -315,8 +328,8 @@ function render(){
     const lm=lateMin(c),L=isLate(c);
     return`<article class="card done${lastIn===p.id?' just':''}" data-id="${esc(p.id)}"><div class="av"><svg class="i" viewBox="0 0 24 24" style="fill:currentColor;stroke:none"><path d="M12 21s-7.5-4.6-9.5-9.2C1 8.3 3.2 4.5 7 4.5c2.1 0 3.6 1.1 5 2.9 1.4-1.8 2.9-2.9 5-2.9 3.8 0 6 3.8 4.5 7.3C19.5 16.4 12 21 12 21z"/></svg></div>
       <div class="who"><b>${esc(p.name)}</b><div class="meta"><span class="time">${hm(c.at)} น.</span><span class="pill${L?' late':''}">${L?'สาย '+lm+' นาที':(lm<0?'มาก่อนเวลา':'ตรงเวลา')}</span></div></div>
-      <div class="side">${c.sig?`<img class="sig" alt="ลายเซ็น" src="${c.sig}" data-act="sig">`:''}
-      <button class="x" data-act="undo" aria-label="ยกเลิกการเช็คอิน"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div></article>`}).join('')
+      <div class="side">${isAdmin&&c.sig?`<img class="sig" alt="ลายเซ็น" src="${esc(c.sig)}" data-act="sig">`:(c.hasSig||c.sig?'<span class="lock" title="ลายเซ็นดูได้เฉพาะผู้ดูแล">✍️ เซ็นแล้ว</span>':'')}
+      <button class="x adm" data-act="undo" aria-label="ยกเลิกการเช็คอิน"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div></article>`}).join('')
     ||(roster.length?`<p class="note">ไม่พบรายชื่อที่ตรงกับการค้นหา</p>`:'');
   lastIn=null;
 }
@@ -343,6 +356,7 @@ function sigPad(box,onChange){
 }
 
 function checkIn(p){
+  if(!store){toast('กำลังเชื่อมต่อฐานข้อมูล รอสักครู่นะคะ');return}
   open(`<p class="hello">สวัสดีค่ะ ยินดีต้อนรับนะคะ</p><h2>${esc(p.name)}</h2><p class="lead">${esc([p.org,p.email].filter(Boolean).join(' · '))||'ยืนยันการเข้าเรียน'}</p>
     <div class="big clock" id="mClock">${hm(Date.now())} น.</div>
     <label class="f">เซ็นชื่อในกรอบด้านล่าง${settings.requireSig?'':' (ไม่บังคับ)'}</label>
@@ -352,7 +366,7 @@ function checkIn(p){
   const ok=$('#mOk'),sp=sigPad($('#pad'),h=>{ok.disabled=settings.requireSig&&!h});
   $('#mClr').onclick=()=>sp.clear();
   ok.onclick=async()=>{ok.disabled=true;const c={at:new Date().toISOString(),sig:sp.has()?sp.png():'',name:p.name,org:p.org||''};c.late=Math.max(0,lateMin(c));c.status=isLate(c)?'สาย':'ตรงเวลา';
-    const r=ok.getBoundingClientRect();try{lastIn=p.id;await store.checkin(p.id,c);close();burst(r.left+r.width/2,r.top+r.height/2);toast(`เย้! ${p.name} เช็คอินแล้ว ${hm(c.at)} น.`,()=>store.uncheck(p.id))}catch(e){ok.disabled=false}};
+    const r=ok.getBoundingClientRect();try{lastIn=p.id;await store.checkin(p.id,c);close();burst(r.left+r.width/2,r.top+r.height/2);const cc=checks[p.id];toast(`เย้! ${p.name} เช็คอินแล้ว ${hm(cc?cc.at:c.at)} น.`,isAdmin?()=>store.uncheck(p.id):null)}catch(e){ok.disabled=false}};
 }
 function confirmBox(title,msg,label,fn){
   open(`<h2>${esc(title)}</h2><p class="lead">${esc(msg)}</p><div class="acts"><button class="btn" data-close>ไม่ใช่</button><button class="btn pri" id="cOk">${esc(label)}</button></div>`);
@@ -449,7 +463,7 @@ function table(){
     return[i+1,p.name,p.org||'',p.pos||'',p.email||'',p.phone||'',p.by||'',c?'มาแล้ว':'ยังไม่มา',c?d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate()):'',c?hm(c.at):'',c?(isLate(c)?'สาย':'ตรงเวลา'):'',c?Math.max(0,lateMin(c)):'',c?(c.sig?'ใช่':'ไม่'):'']})];
 }
 function exportDlg(){
-  open(`<h2>ส่งออกข้อมูลการเช็คชื่อ</h2><p class="lead">${Object.keys(checks).length} จาก ${roster.length} คนเช็คอินแล้ว ส่งออกเป็นไฟล์ CSV เพื่อนำเข้า Google Sheet หรือคัดลอกแล้ววางลงใน Sheet ได้ทันที</p>
+  open(`<h2>ส่งออกข้อมูลการเช็คชื่อ</h2><p class="lead">${roster.filter(p=>checks[p.id]).length} จาก ${roster.length} คนเช็คอินแล้ว ส่งออกเป็นไฟล์ CSV เพื่อนำเข้า Google Sheet หรือคัดลอกแล้ววางลงใน Sheet ได้ทันที</p>
     <div class="acts" style="justify-content:flex-start"><button class="btn pri" id="eCsv">ดาวน์โหลด CSV</button><button class="btn" id="eCopy">คัดลอกไปวางใน Google Sheet</button></div>
     <p class="note" id="eMsg" style="margin-top:12px"></p><div class="acts"><button class="btn" data-close>ปิด</button></div>`);
   const t=table();
@@ -465,11 +479,10 @@ function settingsDlg(){
     <div class="row2"><div><label class="f" for="sS">เวลาเริ่มเรียน</label><input class="in" id="sS" type="time" value="${esc(settings.start)}"></div>
     <div><label class="f" for="sG">ผ่อนผันได้ (นาที)</label><input class="in" id="sG" type="number" min="0" max="120" value="${Number(settings.grace)}"></div></div>
     <label class="check"><input type="checkbox" id="sR" ${settings.requireSig?'checked':''}> บังคับเซ็นชื่อก่อนยืนยัน</label>
-    <label class="f" for="sU">Google Apps Script Web App URL (เว้นว่าง = เก็บในเครื่องนี้)</label><input class="in" id="sU" placeholder="https://script.google.com/macros/s/…/exec" value="${esc(gasUrl())}">
     <div class="acts" style="justify-content:flex-start;border-top:1px solid var(--line);padding-top:14px">
       <button class="btn danger" id="sNew">เริ่มวันใหม่ (ล้างการเช็คอิน)</button><button class="btn danger" id="sWipe">ลบรายชื่อทั้งหมด</button></div>
     <div class="acts"><button class="btn" data-close>ยกเลิก</button><button class="btn pri" id="sOk">บันทึก</button></div>`);
-  $('#sOk').onclick=async()=>{const u=$('#sU').value.trim();if(u!==gasUrl()){try{localStorage.setItem(LS+'-gas',u)}catch(e){}location.reload();return}await store.settings({title:$('#sT').value.trim()||'Claude AI',start:$('#sS').value||'09:00',grace:Math.max(0,Number($('#sG').value)||0),requireSig:$('#sR').checked});close();toast('บันทึกการตั้งค่าแล้ว')};
+  $('#sOk').onclick=async()=>{await store.settings({title:$('#sT').value.trim()||'Claude AI',start:$('#sS').value||'09:00',grace:Math.max(0,Number($('#sG').value)||0),requireSig:$('#sR').checked});close();toast('บันทึกการตั้งค่าแล้ว')};
   $('#sNew').onclick=()=>confirmBox('เริ่มวันใหม่?','การเช็คอินและลายเซ็นทั้งหมดของวันนี้จะถูกล้าง แต่รายชื่อยังอยู่ แนะนำให้ส่งออกข้อมูลก่อน','ล้างการเช็คอิน',async()=>{await store.clear();toast('เริ่มวันใหม่แล้ว')});
   $('#sWipe').onclick=()=>confirmBox('ลบรายชื่อทั้งหมด?','รายชื่อและการเช็คอินทั้งหมดจะถูกลบ','ลบทั้งหมด',async()=>{await store.clear();await store.roster([]);toast('ลบรายชื่อแล้ว')});
 }
@@ -487,8 +500,8 @@ let tt;function toast(m,undo){$('#tMsg').textContent=m;const b=$('#tBtn');b.hidd
 /* ---------- events ---------- */
 $('#list').addEventListener('click',e=>{const a=e.target.closest('[data-act]');if(!a)return;const id=a.closest('.card').dataset.id,p=roster.find(x=>x.id===id);if(!p)return;
   if(a.dataset.act==='in')checkIn(p);
-  if(a.dataset.act==='undo')confirmBox('ยกเลิกการเช็คอิน?',`${p.name} จะกลับเป็นสถานะ "ยังไม่มา" และลายเซ็นจะถูกลบ`,'ยกเลิกเช็คอิน',()=>store.uncheck(id));
-  if(a.dataset.act==='sig')open(`<h2>ลายเซ็นของ ${esc(p.name)}</h2><p class="lead">เช็คอินเวลา ${hm(checks[id].at)} น.</p><img src="${checks[id].sig}" alt="ลายเซ็น" style="width:100%;background:#fff;border-radius:14px;border:1px solid var(--line)"><div class="acts"><button class="btn pri" data-close>ปิด</button></div>`)});
+  if(a.dataset.act==='undo'&&isAdmin)confirmBox('ยกเลิกการเช็คอิน?',`${p.name} จะกลับเป็นสถานะ "ยังไม่มา" และลายเซ็นจะถูกลบ`,'ยกเลิกเช็คอิน',()=>store.uncheck(id));
+  if(a.dataset.act==='sig'&&isAdmin)open(`<h2>ลายเซ็นของ ${esc(p.name)}</h2><p class="lead">เช็คอินเวลา ${hm(checks[id].at)} น.</p><img src="${esc(checks[id].sig)}" alt="ลายเซ็น" style="width:100%;background:#fff;border-radius:14px;border:1px solid var(--line)"><div class="acts"><button class="btn pri" data-close>ปิด</button></div>`)});
 $('#q').addEventListener('input',e=>{q=e.target.value;render()});
 $$('.seg button').forEach(b=>b.onclick=()=>{filter=b.dataset.f;$$('.seg button').forEach(x=>x.setAttribute('aria-pressed',x===b));render()});
 $('#bImp').onclick=importDlg;$('#bImp2').onclick=importDlg;$('#bAdd').onclick=addPerson;$('#bExp').onclick=exportDlg;$('#bSet').onclick=settingsDlg;
@@ -500,17 +513,15 @@ $('#vBadge').onclick=verDlg;$('#vFoot').onclick=verDlg;
 $('#today').textContent=new Date().toLocaleDateString('th-TH',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 tick();setInterval(tick,1000);
 
-function gasUrl(){try{return localStorage.getItem(LS+'-gas')??GAS_URL}catch(e){return GAS_URL}}
-store=localStore();render();setMode('');
-const boot=C=>{
-if(C&&C.use){
-  setMode('กำลังเชื่อมต่อฐานข้อมูล…');
-  C.use('downloads').then(d=>{dl=d}).catch(()=>{});
-  C.use('db').then(db=>{if(db){store=dbStore(db)}else{store=localStore();render();setMode('โหมดออฟไลน์: ข้อมูลบันทึกเฉพาะในเครื่องนี้','warn')}})
-   .catch(()=>setMode('โหมดออฟไลน์: ข้อมูลบันทึกเฉพาะในเครื่องนี้','warn'));
-}else setMode('โหมดออฟไลน์: ข้อมูลบันทึกเฉพาะในเครื่องนี้','warn');
-};
-if(gasUrl()){store=gasStore(gasUrl());setMode('กำลังเชื่อมต่อ Google Sheet…')}else{let tries=0;const wait=()=>{if(window.claude&&window.claude.use)boot(window.claude);else if(++tries<20)setTimeout(wait,100);else boot(null)};wait();}
+if(SB_URL&&SB_KEY&&window.supabase){
+  sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce'}});
+  setMode('กำลังเชื่อมต่อฐานข้อมูล…');acctUI();
+  sb.auth.getSession().then(async({data})=>{await useSession(data.session);
+    if(location.search.includes('code=')||location.hash.includes('access_token'))history.replaceState(null,'',location.pathname);
+    store=sbStore();
+    sb.auth.onAuthStateChange((ev,ses)=>{if(ev==='SIGNED_OUT'||ev==='SIGNED_IN'){const was=isAdmin;useSession(ses).then(()=>{if(was!==isAdmin)store.refresh()})}});
+  });
+}else{store=localStore();render();setMode(SB_URL?'โหลดระบบฐานข้อมูลไม่ได้ ข้อมูลบันทึกเฉพาะในเครื่องนี้':'ยังไม่ได้ตั้งค่า Supabase ใน config.js ข้อมูลบันทึกเฉพาะในเครื่องนี้','warn');document.body.classList.add('admin');isAdmin=true}
 }
 </script>
 </body>

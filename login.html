@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>เข้าสู่ระบบผู้ดูแล · เช็คชื่อ Claude AI</title>
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=Mali:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:light dark;--bg:light-dark(#fffdf9,#17110c);--ink:light-dark(#2e1d10,#f4e9dc);--mute:light-dark(#7d6450,#b39c87);
+--g:light-dark(#8a5a2b,#d29a5c);--line:light-dark(#eadbc9,#3d2b1c);--card:light-dark(#ffffff,#211710);--mint:light-dark(#f6ede2,#2a1d12);--amber:light-dark(#b3401e,#f08a62)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100dvh;display:grid;place-items:center;padding:20px;color:var(--ink);font:16px/1.55 Anuphan,"Noto Sans Thai",system-ui,sans-serif;
+background:radial-gradient(120% 90% at 85% 0%,#b57a3e 0%,transparent 55%),linear-gradient(160deg,#6b4220,#3b2210)}
+.card{width:min(420px,100%);background:var(--card);border-radius:28px;padding:clamp(24px,6vw,36px);box-shadow:0 24px 60px #0007;text-align:center}
+.bear{width:112px;height:112px;margin:-78px auto 4px;display:block;filter:drop-shadow(0 6px 10px #0003);animation:bob 3.2s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-5px) rotate(-2deg)}}
+h1{font:700 28px/1.2 Mali,Anuphan,sans-serif;margin:6px 0 4px}
+p{margin:0 0 18px;color:var(--mute)}
+.g{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;min-height:52px;border-radius:99px;border:1.5px solid var(--line);background:#fff;color:#1f1f1f;font:600 16px Anuphan,sans-serif;cursor:pointer;box-shadow:0 2px 0 #00000014}
+.g:hover{border-color:var(--g)}.g:disabled{opacity:.6;cursor:wait}
+.g svg{width:20px;height:20px}
+.hint{font-size:14px;background:var(--mint);border-radius:14px;padding:10px 14px;margin:16px 0 0;color:var(--ink)}
+.msg{font-size:14px;margin:14px 0 0;min-height:1.5em}.msg.err{color:var(--amber)}
+a.back{display:inline-block;margin-top:18px;color:var(--g);font-weight:600;text-decoration:none}
+:focus-visible{outline:3px solid #f2c46d;outline-offset:2px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<main class="card">
+  <svg class="bear" viewBox="0 0 160 160" aria-hidden="true">
+    <g><circle cx="40" cy="42" r="17" fill="#a8723f"/><circle cx="120" cy="42" r="17" fill="#a8723f"/><circle cx="40" cy="42" r="9" fill="#ecc39a"/><circle cx="120" cy="42" r="9" fill="#ecc39a"/></g>
+    <ellipse cx="80" cy="130" rx="44" ry="28" fill="#93602f"/>
+    <circle cx="80" cy="80" r="46" fill="#b07a45"/>
+    <ellipse cx="80" cy="96" rx="19" ry="14" fill="#f3d6b4"/><ellipse cx="80" cy="89" rx="6.5" ry="4.8" fill="#3b2210"/>
+    <path d="M73 97q7 7 14 0" stroke="#3b2210" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+    <circle cx="61" cy="76" r="5.5" fill="#2e1d10"/><circle cx="99" cy="76" r="5.5" fill="#2e1d10"/>
+    <ellipse cx="50" cy="92" rx="8" ry="4.5" fill="#f2918a" opacity=".55"/><ellipse cx="110" cy="92" rx="8" ry="4.5" fill="#f2918a" opacity=".55"/>
+    <rect x="58" y="112" width="44" height="34" rx="8" fill="#f2c46d" stroke="#6b4220" stroke-width="3"/>
+    <path d="M68 112v-8a12 12 0 0 1 24 0v8" fill="none" stroke="#6b4220" stroke-width="4"/>
+    <circle cx="80" cy="128" r="4" fill="#6b4220"/>
+  </svg>
+  <h1>เข้าสู่ระบบผู้ดูแล</h1>
+  <p>สำหรับผู้ดูแลคลาส Claude AI เพื่อนำเข้ารายชื่อ ตั้งค่า ส่งออกข้อมูล และดูลายเซ็น</p>
+  <button class="g" id="go" type="button">
+    <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.3-.4-3.5z"/></svg>
+    เข้าสู่ระบบด้วย Google
+  </button>
+  <div class="hint">ใช้บัญชี Gmail ของผู้ดูแล: <b id="adm"></b></div>
+  <div class="msg" id="msg" role="status"></div>
+  <a class="back" href="./">← กลับไปหน้าเช็คชื่อ</a>
+</main>
+<script>
+{
+const C=window.CHECKIN_CONFIG||{},$=s=>document.querySelector(s),msg=(t,err)=>{$('#msg').textContent=t;$('#msg').className='msg'+(err?' err':'')};
+const ADMIN=(C.ADMIN_EMAIL||'').toLowerCase();
+$('#adm').textContent=ADMIN||'(ตั้งค่าใน config.js)';
+const home=new URL('./',location.href).href;
+if(!(C.SUPABASE_URL&&C.SUPABASE_KEY&&window.supabase)){msg('ยังไม่ได้ตั้งค่า Supabase ใน config.js หรือโหลดระบบไม่ได้',true);$('#go').disabled=true}
+else{
+  const sb=window.supabase.createClient(C.SUPABASE_URL,C.SUPABASE_KEY,{auth:{persistSession:true,detectSessionInUrl:true,flowType:'pkce'}});
+  const check=async s=>{if(!s)return;msg('กำลังตรวจสอบสิทธิ์…');
+    const{data,error}=await sb.rpc('is_admin');
+    if(!error&&data===true){msg('เข้าสู่ระบบแล้ว กำลังพากลับหน้าเช็คชื่อ…');location.replace(home);return}
+    const em=s.user&&s.user.email||'';await sb.auth.signOut();
+    msg(`บัญชี ${em} ไม่มีสิทธิ์ผู้ดูแล กรุณาใช้ ${ADMIN||'บัญชีผู้ดูแล'}`,true)};
+  sb.auth.getSession().then(({data})=>check(data.session));
+  const p=new URLSearchParams(location.search),h=new URLSearchParams(location.hash.slice(1));
+  const e=p.get('error_description')||h.get('error_description');if(e)msg('เข้าสู่ระบบไม่สำเร็จ: '+e,true);
+  $('#go').onclick=async()=>{$('#go').disabled=true;msg('กำลังไปหน้าเข้าสู่ระบบของ Google…');
+    const{error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:new URL('login.html',home).href,
+      queryParams:{prompt:'select_account',...(ADMIN?{login_hint:ADMIN}:{})}}});
+    if(error){$('#go').disabled=false;msg(/provider is not enabled|Unsupported provider/i.test(error.message)?'ยังไม่ได้เปิดการล็อกอินด้วย Google ใน Supabase (ดูขั้นตอนใน README)':'เข้าสู่ระบบไม่สำเร็จ: '+error.message,true)}};
+}
+}
+</script>
+</body>
+</html>
